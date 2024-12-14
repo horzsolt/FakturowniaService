@@ -1,10 +1,8 @@
 ﻿using log4net;
 using System;
-using System.IO;
-using System.Net.Http;
 using System.Reflection;
 using System.ServiceProcess;
-using System.Threading;
+using System.Timers;
 
 namespace FakturowniaService
 {
@@ -12,10 +10,12 @@ namespace FakturowniaService
     {
         private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private Timer timer;
+        private DateTime lastExecutionDate;
 
         public FakturService()
         {
             ServiceName = "Faktur Export Service";
+            lastExecutionDate = DateTime.MinValue;
         }
 
         // Custom start method for running in console
@@ -34,13 +34,30 @@ namespace FakturowniaService
 
         protected override void OnStart(string[] args)
         {
-            log.Debug("Service OnStart called.");
-            FakturInvoiceExportHandler fakturInvoiceHandler = new FakturInvoiceExportHandler();
-            timer = new Timer(fakturInvoiceHandler.ExecuteTask, null, TimeSpan.Zero, TimeSpan.FromDays(7));
+            log.Info("Service OnStart called.");
+            timer = new Timer(60000);
+            timer.Elapsed += OnTimedEvent;
+            timer.AutoReset = true;
+            timer.Start();
+            //timer = new Timer(fakturInvoiceHandler.ExecuteTask, null, TimeSpan.Zero, TimeSpan.FromDays(7));
+        }
+
+        private void OnTimedEvent(object sender, ElapsedEventArgs e)
+        {
+            DateTime now = DateTime.Now;
+            // Check if the time is 3:00 AM and if the task has not been executed today
+            if (now.Hour == 3 && now.Minute == 0 && lastExecutionDate.Date != now.Date)
+            {
+                log.Info("It is 3am. Start the FakturInvoiceExport.");
+                FakturInvoiceExportHandler fakturInvoiceHandler = new FakturInvoiceExportHandler();
+                fakturInvoiceHandler.ExecuteTask(null);
+                lastExecutionDate = now.Date;
+            }
         }
 
         protected override void OnStop()
         {
+            timer?.Stop();
             timer?.Dispose();
         }
     }

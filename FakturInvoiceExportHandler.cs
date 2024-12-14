@@ -1,21 +1,23 @@
 ﻿using log4net;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
 
 namespace FakturowniaService
 {
     class FakturInvoiceExportHandler
     {
         private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_API_URL_TEMPLATE");
+        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_API_URL_TEMPLATE");
         public void ExecuteTask(object state)
         {
+            List<string> invoiceFiles = null;
+
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
@@ -23,99 +25,82 @@ namespace FakturowniaService
 
                 string dateFrom = "2023-01-01";
                 string dateTo = DateTime.Today.ToString("yyyy-MM-dd");
-                DownloadAllInvoices(dateFrom, dateTo);
 
-                stopwatch.Stop();
+                invoiceFiles = HTTPUtil.DownloadAllInvoices(apiUrlTemplate, dateFrom, dateTo);
+
+                string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
+                          $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
+                          $"User Id={Environment.GetEnvironmentVariable("VIR_SQL_USER")};" +
+                          $"Password={Environment.GetEnvironmentVariable("VIR_SQL_PASSWORD")};" +
+                          "Connection Timeout=500;";
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            try
+                            {
+                                DBUtil.DeleteAllRows("Fakturownia_InvoiceItem", connection, transaction);
+                                DBUtil.DeleteAllRows("Fakturownia_InvoiceHead", connection, transaction);
+                            }
+                            finally
+                            {
+                                DBUtil.EnableForeignKeyCheck(connection, transaction, "Fakturownia_InvoiceItem", "FK_Fakturownia_InvoiceItem_InvoiceHead");
+                            }
+
+                            foreach (string file in invoiceFiles)
+                            {
+                                log.Info($"Processing file: {file}");
+
+                                var settings = new JsonSerializerSettings
+                                {
+                                    Converters = new List<JsonConverter> { new DecimalStringConverter() }
+                                };
+
+                                var jsonContent = File.ReadAllText(file);
+                                var invoices = JsonConvert.DeserializeObject<List<Invoice>>(jsonContent, settings);
+
+                                foreach (var invoice in invoices)
+                                {
+                                    DBUtil.InsertInvoiceHeader(invoice, connection, transaction);
+
+                                    foreach (var item in invoice.Positions)
+                                    {
+                                        DBUtil.InsertInvoiceItem(item, connection, transaction);
+                                    }
+                                }
+                            }
+
+                            stopwatch.Stop();
+                            DBUtil.InsertInvoiceImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
+
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            log.Error($"Error: {ex}");
+                        }
+                    }
+                }
+                
                 log.Info($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
             }
             catch (Exception ex)
             {
                 log.Error($"Error: {ex}");
             }
-        }
-
-        private void DownloadAllInvoices(string dateFrom, string dateTo)
-        {
-            string tempDirectory = Path.GetTempPath();
-            int maxRetries = 5;
-            int page = 1;
-
-            log.Info($"Start invoice download between {dateFrom} and {dateTo}");
-
-            using (HttpClient client = new HttpClient())
+            finally
             {
-                client.Timeout = TimeSpan.FromMinutes(5);
-
-                while (true)
+                if (invoiceFiles != null && invoiceFiles.Count > 0)
                 {
-                    string apiUrl = string.Format(apiUrlTemplate, dateFrom, dateTo, page);
-                    string filePath = Path.Combine(tempDirectory, $"invoices_page_{page}.json");
-
-                    log.Debug($"Downloading page {page} to {filePath}...");
-                    log.Debug($"API URL: {apiUrl}");
-
-                    bool success = false;
-                    for (int attempt = 0; attempt < maxRetries; attempt++)
-                    {
-                        try
-                        {
-                            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
-                            response.EnsureSuccessStatusCode();
-
-                            string content = response.Content.ReadAsStringAsync().Result;
-
-                            // Check if the content is empty JSON
-                            if (IsEmptyJson(content))
-                            {
-                                log.Info($"Page {page} is empty. Stopping iteration.");
-                                return;
-                            }
-
-                            File.WriteAllText(filePath, content, Encoding.UTF8);
-
-                            success = true;
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            log.Error($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
-                            Thread.Sleep(2000);
-                        }
-                    }
-
-                    if (!success)
-                    {
-                        throw new Exception($"Failed to download page {page} after {maxRetries} attempts.");
-                    }
-
-                    page++;
-                    Thread.Sleep(1000);
+                    log.Info("Cleaning up...");
+                    FileUtil.DeleteInvoiceFiles(invoiceFiles);
                 }
-            }
-        }
-
-        private bool IsEmptyJson(string json)
-        {
-            if (string.IsNullOrWhiteSpace(json))
-                return true;
-
-            try
-            {
-                var doc = JsonDocument.Parse(json);
-
-                // Check if it's an empty array
-                if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() == 0)
-                    return true;
-
-                // Check if it's an empty object
-                if (doc.RootElement.ValueKind == JsonValueKind.Object && doc.RootElement.EnumerateObject().MoveNext() == false)
-                    return true;
-
-                return false; // JSON is not empty
-            }
-            catch (JsonException)
-            {
-                return false; // Invalid JSON
             }
         }
     }

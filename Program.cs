@@ -16,6 +16,7 @@ namespace FakturExport
 
         static void Main(string[] args)
         {
+
             string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string log4NetConfigFilePath = Path.Combine(exeDirectory, "log4net.config");
             XmlConfigurator.Configure(new FileInfo(log4NetConfigFilePath));
