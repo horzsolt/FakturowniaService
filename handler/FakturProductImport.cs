@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
@@ -10,23 +9,20 @@ using System.Reflection;
 
 namespace FakturowniaService
 {
-    class FakturInvoiceExportHandler
+    class FakturProductImport
     {
         private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_API_URL_TEMPLATE");
+        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PRODUCT_API_URL_TEMPLATE");
         public void ExecuteTask(object state)
         {
-            List<string> invoiceFiles = null;
+            List<string> productFiles = null;
 
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                string dateFrom = "2023-01-01";
-                string dateTo = DateTime.Today.ToString("yyyy-MM-dd");
-
-                invoiceFiles = HTTPUtil.DownloadAllInvoices(apiUrlTemplate, dateFrom, dateTo);
+                productFiles = HTTP.DownloadAllProducts(apiUrlTemplate);
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
@@ -42,17 +38,9 @@ namespace FakturowniaService
                     {
                         try
                         {
-                            try
-                            {
-                                DBUtil.DeleteAllRows("Fakturownia_InvoiceItem", connection, transaction);
-                                DBUtil.DeleteAllRows("Fakturownia_InvoiceHead", connection, transaction);
-                            }
-                            finally
-                            {
-                                DBUtil.EnableForeignKeyCheck(connection, transaction, "Fakturownia_InvoiceItem", "FK_Fakturownia_InvoiceItem_InvoiceHead");
-                            }
+                            DB.DeleteAllRows("Fakturownia_Product", connection, transaction);
 
-                            foreach (string file in invoiceFiles)
+                            foreach (string file in productFiles)
                             {
                                 log.Info($"Processing file: {file}");
 
@@ -61,22 +49,17 @@ namespace FakturowniaService
                                     Converters = new List<JsonConverter> { new DecimalStringConverter() }
                                 };
 
-                                var jsonContent = File.ReadAllText(file);
-                                var invoices = JsonConvert.DeserializeObject<List<Invoice>>(jsonContent, settings);
+                                var json = System.IO.File.ReadAllText(file);
+                                var products = JsonConvert.DeserializeObject<List<Product>>(json, settings);
 
-                                foreach (var invoice in invoices)
+                                foreach (var product in products)
                                 {
-                                    DBUtil.InsertInvoiceHeader(invoice, connection, transaction);
-
-                                    foreach (var item in invoice.Positions)
-                                    {
-                                        DBUtil.InsertInvoiceItem(item, connection, transaction);
-                                    }
+                                    DB.InsertProduct(product, connection, transaction);
                                 }
                             }
 
                             stopwatch.Stop();
-                            DBUtil.InsertInvoiceImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
+                            DB.InsertProductImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
 
                             transaction.Commit();
                         }
@@ -96,10 +79,10 @@ namespace FakturowniaService
             }
             finally
             {
-                if (invoiceFiles != null && invoiceFiles.Count > 0)
+                if (productFiles != null && productFiles.Count > 0)
                 {
                     log.Info("Cleaning up...");
-                    FileUtil.DeleteInvoiceFiles(invoiceFiles);
+                    File.DeleteFiles(productFiles);
                 }
             }
         }

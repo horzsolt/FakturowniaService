@@ -93,16 +93,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DBUtil.cs" />
-    <Compile Include="DecimalStringConverter.cs" />
-    <Compile Include="FakturInvoiceExportHandler.cs" />
+    <Compile Include="VO\Client.cs" />
+    <Compile Include="util\DB.cs" />
+    <Compile Include="util\DecimalStringConverter.cs" />
+    <Compile Include="handler\FakturPaymentImport.cs" />
+    <Compile Include="handler\FakturClientImport.cs" />
+    <Compile Include="handler\FakturProductImport.cs" />
+    <Compile Include="handler\FakturInvoiceImport.cs" />
     <Compile Include="FakturService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="FileUtil.cs" />
-    <Compile Include="HTTPUtil.cs" />
-    <Compile Include="Invoice.cs" />
-    <Compile Include="InvoiceItem.cs" />
+    <Compile Include="util\File.cs" />
+    <Compile Include="util\HTTP.cs" />
+    <Compile Include="VO\Invoice.cs" />
+    <Compile Include="VO\InvoiceItem.cs" />
+    <Compile Include="VO\Payment.cs" />
+    <Compile Include="VO\Product.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>

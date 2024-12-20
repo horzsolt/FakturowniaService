@@ -23,8 +23,17 @@ namespace FakturowniaService
         {
             try
             {
-                FakturInvoiceExportHandler fakturInvoiceHandler = new FakturInvoiceExportHandler();
+                FakturProductImport fakturProductHandler = new FakturProductImport();
+                fakturProductHandler.ExecuteTask(null);
+
+                FakturClientImport fakturClientHandler = new FakturClientImport();
+                fakturClientHandler.ExecuteTask(null);
+
+                FakturInvoiceImport fakturInvoiceHandler = new FakturInvoiceImport();
                 fakturInvoiceHandler.ExecuteTask(null);
+
+                FakturPaymentImport fakturPaymentHandler = new FakturPaymentImport();
+                fakturPaymentHandler.ExecuteTask(null);
             }
             catch (Exception ex)
             {
@@ -48,9 +57,20 @@ namespace FakturowniaService
             // Check if the time is 3:00 AM and if the task has not been executed today
             if (now.Hour == 3 && now.Minute == 0 && lastExecutionDate.Date != now.Date)
             {
-                log.Info("It is 3am. Start the FakturInvoiceExport.");
-                FakturInvoiceExportHandler fakturInvoiceHandler = new FakturInvoiceExportHandler();
+                log.Info("It is 3am. Start the Faktur import tasks.");
+
+                FakturProductImport fakturProductHandler = new FakturProductImport();
+                fakturProductHandler.ExecuteTask(null);
+
+                FakturClientImport fakturClientHandler = new FakturClientImport();
+                fakturClientHandler.ExecuteTask(null);
+
+                FakturInvoiceImport fakturInvoiceHandler = new FakturInvoiceImport();
                 fakturInvoiceHandler.ExecuteTask(null);
+
+                FakturPaymentImport fakturPaymentHandler = new FakturPaymentImport();
+                fakturPaymentHandler.ExecuteTask(null);
+
                 lastExecutionDate = now.Date;
             }
         }

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace FakturowniaService
 {
@@ -15,14 +11,17 @@ namespace FakturowniaService
         public string Description { get; set; }
         [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Price_Net { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Quantity { get; set; }
+
         [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Total_Price_Gross { get; set; }
         [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Total_Price_Net { get; set; }
         public long? Account_Id { get; set; }
-        public DateTimeOffset? Created_At { get; set; }
-        public DateTimeOffset? Updated_At { get; set; }
+        public DateTime? Created_At { get; set; }
+        public DateTime? Updated_At { get; set; }
         public string Additional_Info { get; set; }
         public string Quantity_Unit { get; set; }
         public string Tax { get; set; }
