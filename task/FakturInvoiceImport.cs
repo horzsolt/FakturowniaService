@@ -1,20 +1,28 @@
-﻿using log4net;
+﻿using FakturowniaService.task;
+using log4net;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 
 namespace FakturowniaService
 {
-    class FakturInvoiceImport
+    class FakturInvoiceImport : ImportTask
     {
-        private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly MetricsService metricsService;
+        private ILogger<FakturService> log;
         private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_API_URL_TEMPLATE");
-        public void ExecuteTask(object state)
+
+        public FakturInvoiceImport(MetricsService metricsService)
         {
+            this.metricsService = metricsService;
+        }
+
+        public void ExecuteTask(ILogger<FakturService> logger)
+        {
+            log = logger;
             List<string> invoiceFiles = null;
 
             try
@@ -25,7 +33,7 @@ namespace FakturowniaService
                 string dateFrom = "2023-01-01";
                 string dateTo = DateTime.Today.ToString("yyyy-MM-dd");
 
-                invoiceFiles = HTTP.DownloadAllInvoices(apiUrlTemplate, dateFrom, dateTo);
+                invoiceFiles = HTTP.DownloadAllInvoices(apiUrlTemplate, dateFrom, dateTo, log);
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
@@ -53,7 +61,7 @@ namespace FakturowniaService
 
                             foreach (string file in invoiceFiles)
                             {
-                                log.Info($"Processing file: {file}");
+                                log.LogInformation($"Processing file: {file}");
 
                                 var settings = new JsonSerializerSettings
                                 {
@@ -65,7 +73,7 @@ namespace FakturowniaService
 
                                 foreach (var invoice in invoices)
                                 {
-                                    DB.InsertInvoiceHeader(invoice, connection, transaction);
+                                    DB.InsertInvoiceHeader(invoice, connection, transaction, log);
 
                                     foreach (var item in invoice.Positions)
                                     {
@@ -74,30 +82,31 @@ namespace FakturowniaService
                                 }
                             }
 
-                            stopwatch.Stop();
                             DB.InsertInvoiceImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
-
                             transaction.Commit();
+
+                            stopwatch.Stop();
+                            metricsService.RecordInvoiceImportDuration(stopwatch.Elapsed.TotalSeconds);
                         }
                         catch (Exception ex)
                         {
                             transaction.Rollback();
-                            log.Error($"Error: {ex}");
+                            log.LogError($"Error: {ex}");
                         }
                     }
                 }
                 
-                log.Info($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
+                log.LogInformation($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
             }
             catch (Exception ex)
             {
-                log.Error($"Error: {ex}");
+                log.LogError($"Error: {ex}");
             }
             finally
             {
                 if (invoiceFiles != null && invoiceFiles.Count > 0)
                 {
-                    log.Info("Cleaning up...");
+                    log.LogInformation("Cleaning up...");
                     File.DeleteFiles(invoiceFiles);
                 }
             }

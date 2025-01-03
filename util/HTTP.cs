@@ -1,4 +1,5 @@
 ﻿using log4net;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,14 +16,14 @@ namespace FakturowniaService
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         //TODO: Have only one method for downloading all data
-        public static List<string> DownloadAllClients(string apiUrlTemplate)
+        public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<FakturService> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
             int page = 1;
             List<string> clientFiles = new List<string>();
 
-            log.Info($"Start clients download.");
+            log.LogInformation($"Start clients download.");
 
             using (HttpClient client = new HttpClient())
             {
@@ -33,8 +34,8 @@ namespace FakturowniaService
                     string apiUrl = string.Format(apiUrlTemplate, page);
                     string filePath = Path.Combine(tempDirectory, $"clients_page_{page}.json");
 
-                    log.Debug($"Downloading page {page} to {filePath}...");
-                    log.Debug($"API URL: {apiUrl}");
+                    log.LogDebug($"Downloading page {page} to {filePath}...");
+                    log.LogDebug($"API URL: {apiUrl}");
 
                     bool success = false;
                     for (int attempt = 0; attempt < maxRetries; attempt++)
@@ -48,7 +49,7 @@ namespace FakturowniaService
 
                             if (IsEmptyJson(content))
                             {
-                                log.Info($"Page {page} is empty. Stopping iteration.");
+                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
                                 return clientFiles;
                             }
 
@@ -60,7 +61,7 @@ namespace FakturowniaService
                         }
                         catch (Exception ex)
                         {
-                            log.Error($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
+                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
                             Thread.Sleep(2000);
                         }
                     }
@@ -75,14 +76,14 @@ namespace FakturowniaService
                 }
             }
         }
-        public static List<string> DownloadAllProducts(string apiUrlTemplate)
+        public static List<string> DownloadAllProducts(string apiUrlTemplate, ILogger<FakturService> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
             int page = 1;
             List<string> productFiles = new List<string>();
 
-            log.Info($"Start products download.");
+            log.LogInformation($"Start products download.");
 
             using (HttpClient client = new HttpClient())
             {
@@ -93,8 +94,8 @@ namespace FakturowniaService
                     string apiUrl = string.Format(apiUrlTemplate, page);
                     string filePath = Path.Combine(tempDirectory, $"products_page_{page}.json");
 
-                    log.Debug($"Downloading page {page} to {filePath}...");
-                    log.Debug($"API URL: {apiUrl}");
+                    log.LogDebug($"Downloading page {page} to {filePath}...");
+                    log.LogDebug($"API URL: {apiUrl}");
 
                     bool success = false;
                     for (int attempt = 0; attempt < maxRetries; attempt++)
@@ -108,7 +109,7 @@ namespace FakturowniaService
 
                             if (IsEmptyJson(content))
                             {
-                                log.Info($"Page {page} is empty. Stopping iteration.");
+                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
                                 return productFiles;
                             }
 
@@ -120,7 +121,7 @@ namespace FakturowniaService
                         }
                         catch (Exception ex)
                         {
-                            log.Error($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
+                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
                             Thread.Sleep(2000);
                         }
                     }
@@ -136,14 +137,14 @@ namespace FakturowniaService
             }
         }
 
-        public static List<string> DownloadAllPayments(string apiUrlTemplate)
+        public static List<string> DownloadAllPayments(string apiUrlTemplate, ILogger<FakturService> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
             int page = 1;
             List<string> paymentFiles = new List<string>();
 
-            log.Info($"Start payments download.");
+            log.LogInformation($"Start payments download.");
 
             using (HttpClient client = new HttpClient())
             {
@@ -154,8 +155,8 @@ namespace FakturowniaService
                     string apiUrl = string.Format(apiUrlTemplate, page);
                     string filePath = Path.Combine(tempDirectory, $"payments_page_{page}.json");
 
-                    log.Debug($"Downloading page {page} to {filePath}...");
-                    log.Debug($"API URL: {apiUrl}");
+                    log.LogDebug($"Downloading page {page} to {filePath}...");
+                    log.LogDebug($"API URL: {apiUrl}");
 
                     bool success = false;
                     for (int attempt = 0; attempt < maxRetries; attempt++)
@@ -169,7 +170,7 @@ namespace FakturowniaService
 
                             if (IsEmptyJson(content))
                             {
-                                log.Info($"Page {page} is empty. Stopping iteration.");
+                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
                                 return paymentFiles;
                             }
 
@@ -181,7 +182,7 @@ namespace FakturowniaService
                         }
                         catch (Exception ex)
                         {
-                            log.Error($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
+                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
                             Thread.Sleep(2000);
                         }
                     }
@@ -197,14 +198,14 @@ namespace FakturowniaService
             }
         }
 
-        public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo)
+        public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo, ILogger<FakturService> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
             int page = 1;
             List<string> invoiceFiles = new List<string>();
 
-            log.Info($"Start invoice download between {dateFrom} and {dateTo}");
+            log.LogInformation($"Start invoice download between {dateFrom} and {dateTo}");
 
             using (HttpClient client = new HttpClient())
             {
@@ -215,8 +216,8 @@ namespace FakturowniaService
                     string apiUrl = string.Format(apiUrlTemplate, dateFrom, dateTo, page);
                     string filePath = Path.Combine(tempDirectory, $"invoices_page_{page}.json");
 
-                    log.Debug($"Downloading page {page} to {filePath}...");
-                    log.Debug($"API URL: {apiUrl}");
+                    log.LogDebug($"Downloading page {page} to {filePath}...");
+                    log.LogDebug($"API URL: {apiUrl}");
 
                     bool success = false;
                     for (int attempt = 0; attempt < maxRetries; attempt++)
@@ -230,7 +231,7 @@ namespace FakturowniaService
 
                             if (IsEmptyJson(content))
                             {
-                                log.Info($"Page {page} is empty. Stopping iteration.");
+                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
                                 return invoiceFiles;
                             }
 
@@ -242,7 +243,7 @@ namespace FakturowniaService
                         }
                         catch (Exception ex)
                         {
-                            log.Error($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
+                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
                             Thread.Sleep(2000);
                         }
                     }

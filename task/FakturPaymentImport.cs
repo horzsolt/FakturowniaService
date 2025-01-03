@@ -1,28 +1,35 @@
-﻿using log4net;
+﻿using FakturowniaService.task;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
+using System.Diagnostics.Metrics;
+
 
 namespace FakturowniaService
 {
-    class FakturProductImport
+    class FakturPaymentImport : ImportTask
     {
-        private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PRODUCT_API_URL_TEMPLATE");
-        public void ExecuteTask(object state)
+        private readonly MetricsService metricsService;
+        private ILogger<FakturService> log;
+        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PAYMENT_API_URL_TEMPLATE");
+        public FakturPaymentImport(MetricsService metricsService)
         {
-            List<string> productFiles = null;
+            this.metricsService = metricsService;
+        }
+        public void ExecuteTask(ILogger<FakturService> logger)
+        {
+            log = logger;
+            List<string> paymentFiles = null;
 
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                productFiles = HTTP.DownloadAllProducts(apiUrlTemplate);
+                paymentFiles = HTTP.DownloadAllPayments(apiUrlTemplate, log);
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
@@ -38,11 +45,10 @@ namespace FakturowniaService
                     {
                         try
                         {
-                            DB.DeleteAllRows("Fakturownia_Product", connection, transaction);
-
-                            foreach (string file in productFiles)
+                            DB.DeleteAllRows("Fakturownia_Payment", connection, transaction);
+                            foreach (string file in paymentFiles)
                             {
-                                log.Info($"Processing file: {file}");
+                                log.LogInformation($"Processing file: {file}");
 
                                 var settings = new JsonSerializerSettings
                                 {
@@ -50,39 +56,40 @@ namespace FakturowniaService
                                 };
 
                                 var json = System.IO.File.ReadAllText(file);
-                                var products = JsonConvert.DeserializeObject<List<Product>>(json, settings);
+                                var payments = JsonConvert.DeserializeObject<List<Payment>>(json);
 
-                                foreach (var product in products)
+                                foreach (var payment in payments)
                                 {
-                                    DB.InsertProduct(product, connection, transaction);
+                                    DB.InsertPayment(payment, connection, transaction, log);
                                 }
                             }
 
-                            stopwatch.Stop();
-                            DB.InsertProductImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
-
+                            DB.InsertPaymentImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
                             transaction.Commit();
+
+                            stopwatch.Stop();
+                            metricsService.RecordPaymentImportDuration(stopwatch.Elapsed.TotalSeconds);
                         }
                         catch (Exception ex)
                         {
                             transaction.Rollback();
-                            log.Error($"Error: {ex}");
+                            log.LogError($"Error: {ex}");
                         }
                     }
                 }
                 
-                log.Info($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
+                log.LogInformation($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
             }
             catch (Exception ex)
             {
-                log.Error($"Error: {ex}");
+                log.LogError($"Error: {ex}");
             }
             finally
             {
-                if (productFiles != null && productFiles.Count > 0)
+                if (paymentFiles != null && paymentFiles.Count > 0)
                 {
-                    log.Info("Cleaning up...");
-                    File.DeleteFiles(productFiles);
+                    log.LogInformation("Cleaning up...");
+                    File.DeleteFiles(paymentFiles);
                 }
             }
         }

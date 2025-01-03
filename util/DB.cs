@@ -1,4 +1,5 @@
 ﻿using log4net;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -8,7 +9,6 @@ namespace FakturowniaService
 {
     public static class DB
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void DeleteAllRows(string tableName, SqlConnection connection, SqlTransaction transaction)
         {
@@ -83,9 +83,9 @@ namespace FakturowniaService
             }
         }
 
-        public static void InsertProduct(Product product, SqlConnection connection, SqlTransaction transaction)
+        public static void InsertProduct(Product product, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
         {
-            log.Info($"Inserting product {product.Id} into the database.");
+            log.LogInformation($"Inserting product {product.Id} into the database.");
 
             var query = @"
         INSERT INTO Fakturownia_Product (
@@ -206,9 +206,9 @@ namespace FakturowniaService
             }
         }
 
-        public static void InsertPayment(Payment payment, SqlConnection connection, SqlTransaction transaction)
+        public static void InsertPayment(Payment payment, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
         {
-            log.Info($"Inserting payment {payment.Id} into the database.");
+            log.LogInformation($"Inserting payment {payment.Id} into the database.");
 
             var query = @"
             INSERT INTO Fakturownia_Payment (
@@ -345,7 +345,7 @@ namespace FakturowniaService
 
         }
 
-        public static void InsertInvoiceHeader(Invoice invoice, SqlConnection connection, SqlTransaction transaction)
+        public static void InsertInvoiceHeader(Invoice invoice, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
         {
             var query = @"
         INSERT INTO [dbo].[Fakturownia_InvoiceHead] (
@@ -393,7 +393,7 @@ namespace FakturowniaService
             @get_tax_name, @tax_visible, @tax_name_type, @split_payment, @gtu_codes, @procedure_designations
         );";
 
-            log.Info($"Inserting invoice {invoice.Id} into the database.");
+            log.LogInformation($"Inserting invoice {invoice.Id} into the database.");
 
             using (var command = new SqlCommand(query, connection, transaction))
             {
@@ -613,10 +613,10 @@ namespace FakturowniaService
                 command.ExecuteNonQuery();
             }
         }
-        public static void InsertClient(Client client, SqlConnection connection, SqlTransaction transaction)
+        public static void InsertClient(Client client, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
         {
 
-            log.Info($"Inserting client {client.Id} into the database.");
+            log.LogInformation($"Inserting client {client.Id} into the database.");
 
             var query = @"
         INSERT INTO Fakturownia_Client (
@@ -641,10 +641,10 @@ namespace FakturowniaService
             {
 
                 command.Parameters.AddWithValue("@Id", client.Id);
-                command.Parameters.AddWithValue("@Name", client.Name);
-                command.Parameters.AddWithValue("@TaxNo", client.Tax_No);
-                command.Parameters.AddWithValue("@PostCode", client.Post_Code);
-                command.Parameters.AddWithValue("@City", client.City);
+                command.Parameters.AddWithValue("@Name", client.Name ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@TaxNo", client.Tax_No ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@PostCode", client.Post_Code ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@City", client.City ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Street", client.Street ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@FirstName", client.First_Name ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Country", client.Country ?? (object)DBNull.Value);
@@ -652,10 +652,10 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@Phone", client.Phone ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Www", client.Www ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Fax", client.Fax ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@CreatedAt", client.Created_At);
-                command.Parameters.AddWithValue("@UpdatedAt", client.Updated_At);
+                command.Parameters.AddWithValue("@CreatedAt", client.Created_At ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@UpdatedAt", client.Updated_At ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@StreetNo", client.Street_No ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@Kind", client.Kind);
+                command.Parameters.AddWithValue("@Kind", client.Kind ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Bank", client.Bank ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@BankAccount", client.Bank_Account ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@BankAccountId", client.Bank_Account_Id ?? (object)DBNull.Value);
@@ -663,7 +663,7 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@Note", client.Note ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@LastName", client.Last_Name ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Referrer", client.Referrer ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@Token", client.Token);
+                command.Parameters.AddWithValue("@Token", client.Token ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Fuid", client.Fuid ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Fname", client.Fname ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Femail", client.Femail ?? (object)DBNull.Value);
@@ -676,15 +676,14 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@DeliveryAddress", client.Delivery_Address ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Person", client.Person ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@PanelUserId", client.Panel_User_Id ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@UseMassPayment", client.Use_Mass_Payment);
+                command.Parameters.AddWithValue("@UseMassPayment", client.Use_Mass_Payment ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@MassPaymentCode", client.Mass_Payment_Code ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@ExternalId", client.External_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Company", client.Company);
                 command.Parameters.AddWithValue("@Title", client.Title ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@MobilePhone", client.Mobile_Phone ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@RegisterNumber", client.Register_Number ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@TaxNoCheck", client.Tax_No_Check);
-                command.Parameters.AddWithValue("@AttachmentsCount", client.Attachments_Count);
+                command.Parameters.AddWithValue("@AttachmentsCount", client.Attachments_Count ?? 0);
                 command.Parameters.AddWithValue("@DefaultPaymentType", client.Default_Payment_Type ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@TaxNoKind", client.Tax_No_Kind ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@TaxNoCheck", client.Tax_No_Check ?? (object)DBNull.Value);
@@ -692,7 +691,7 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@DisableAutoReminders", client.Disable_Auto_Reminders);
                 command.Parameters.AddWithValue("@BuyerId", client.Buyer_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@PriceListId", client.Price_List_Id ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@PanelUrl", client.Panel_Url);
+                command.Parameters.AddWithValue("@PanelUrl", client.Panel_Url ?? (object)DBNull.Value);
 
                 command.ExecuteNonQuery();
             }

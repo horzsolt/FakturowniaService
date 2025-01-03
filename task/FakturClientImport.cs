@@ -1,20 +1,28 @@
-﻿using log4net;
+﻿using FakturowniaService.task;
+using log4net;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 
 namespace FakturowniaService
 {
-    class FakturClientImport
+    class FakturClientImport : ImportTask
     {
-        private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly MetricsService metricsService;
+        private ILogger<FakturService> log;
         private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_CLIENT_API_URL_TEMPLATE");
-        public void ExecuteTask(object state)
+
+        public FakturClientImport(MetricsService metricsService)
         {
+            this.metricsService = metricsService;
+        }
+
+        public void ExecuteTask(ILogger<FakturService> logger)
+        {
+            log = logger;
             List<string> clientFiles = null;
 
             try
@@ -22,7 +30,7 @@ namespace FakturowniaService
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                clientFiles = HTTP.DownloadAllClients(apiUrlTemplate);
+                clientFiles = HTTP.DownloadAllClients(apiUrlTemplate, log);
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
@@ -42,7 +50,7 @@ namespace FakturowniaService
 
                             foreach (string file in clientFiles)
                             {
-                                log.Info($"Processing file: {file}");
+                                log.LogInformation($"Processing file: {file}");
 
                                 var settings = new JsonSerializerSettings
                                 {
@@ -54,34 +62,35 @@ namespace FakturowniaService
 
                                 foreach (var client in clients)
                                 {
-                                    DB.InsertClient(client, connection, transaction);
+                                    DB.InsertClient(client, connection, transaction, log);
                                 }
                             }
 
-                            stopwatch.Stop();
                             DB.InsertClientImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
-
                             transaction.Commit();
+
+                            stopwatch.Stop();
+                            metricsService.RecordClientImportDuration(stopwatch.Elapsed.TotalSeconds);
                         }
                         catch (Exception ex)
                         {
                             transaction.Rollback();
-                            log.Error($"Error: {ex}");
+                            log.LogError($"Error: {ex}");
                         }
                     }
                 }
                 
-                log.Info($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
+                log.LogInformation($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
             }
             catch (Exception ex)
             {
-                log.Error($"Error: {ex}");
+                log.LogError($"Error: {ex}");
             }
             finally
             {
                 if (clientFiles != null && clientFiles.Count > 0)
                 {
-                    log.Info("Cleaning up...");
+                    log.LogInformation("Cleaning up...");
                     File.DeleteFiles(clientFiles);
                 }
             }

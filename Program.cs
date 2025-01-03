@@ -1,26 +1,90 @@
 ﻿using FakturowniaService;
 using log4net;
-using log4net.Config;
 using System;
 using System.Configuration.Install;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
-
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using Microsoft.Extensions.DependencyInjection;
+using FakturowniaService.task;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace FakturExport
 {
     internal class Program
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly String serviceName = "FakturService";
+        private static readonly String serviceVersion = "1.0.0";
+
+        private static void ConfigureServices(ServiceCollection services)
+        {
+
+            services.AddOpenTelemetry()
+                .WithTracing(builder =>
+                {
+                    builder
+                        .AddSource(serviceName)
+                        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(
+                            serviceName: serviceName,
+                            serviceVersion: serviceVersion))
+                        .AddHttpClientInstrumentation()
+                        .AddOtlpExporter();
+                })
+                .WithMetrics(builder =>
+                {
+                    builder
+                        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(
+                            serviceName: serviceName,
+                            serviceVersion: serviceVersion))
+                        .AddMeter(serviceName)
+                        .AddRuntimeInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddOtlpExporter();
+                });
+
+            services.AddLogging(builder =>
+            {
+                builder.AddOpenTelemetry(options =>
+                {
+                    options.IncludeScopes = true;
+                    options.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(
+                        serviceName: serviceName,
+                        serviceVersion: serviceVersion));
+                    options.AddOtlpExporter();
+                });
+
+                string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string log4NetConfigFilePath = Path.Combine(exeDirectory, "log4net.config");
+                builder.AddLog4Net(log4NetConfigFilePath);
+            });
+
+            services.AddMetrics();
+
+            // Register the services
+            services.AddSingleton<MetricsService>();
+
+            services.AddTransient<ImportTask, FakturProductImport>();
+            services.AddTransient<ImportTask, FakturClientImport>();
+            services.AddTransient<ImportTask, FakturInvoiceImport>();
+            services.AddTransient<ImportTask, FakturPaymentImport>();
+            services.AddSingleton<FakturService>();
+
+        }
 
         static void Main(string[] args)
         {
 
-            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string log4NetConfigFilePath = Path.Combine(exeDirectory, "log4net.config");
-            XmlConfigurator.Configure(new FileInfo(log4NetConfigFilePath));
-            log.Info("Application started.");
+            var services = new ServiceCollection();
+
+            ConfigureServices(services);
+
+            var serviceProvider = services.BuildServiceProvider();
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
             if (Environment.UserInteractive)
             {
@@ -36,25 +100,23 @@ namespace FakturExport
                     default:
                         // Run as a console app for debugging
 
-                        log.Info("Running as a console application for debugging.");
-                        FakturService service = new FakturService();
-                        service.StartAsConsole(args);
+                        using (logger.BeginScope("Console mode"))
+                        {
+                            logger.LogInformation("Starting the service in interactive mode.");
+                            var service = serviceProvider.GetRequiredService<FakturService>();
+                            service.StartAsConsole(null);
+                        }
                         break;
                 }
             }
             else
             {
-                // Run as a Windows Service
-
-                log.Info("Running as a Windows Service.");
-
-                ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[]
-                {
-                    new FakturService()
-                };
-                ServiceBase.Run(ServicesToRun);
+                logger.LogInformation("Starting the service as a Windows Service...");
+                ServiceBase[] servicesToRun = new ServiceBase[] { serviceProvider.GetRequiredService<FakturService>() };
+                ServiceBase.Run(servicesToRun);
             }
+
+            serviceProvider.Dispose();
         }
     }
 }
