@@ -4,12 +4,10 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Data;
 
-
 namespace FakturowniaService
 {
     public static class DB
     {
-
         public static void DeleteAllRows(string tableName, SqlConnection connection, SqlTransaction transaction)
         {
             using (var command = new SqlCommand($"DELETE FROM {tableName}", connection, transaction))

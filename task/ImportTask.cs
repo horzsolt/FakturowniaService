@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace FakturowniaService.task
+﻿namespace FakturowniaService.task
 {
     public interface ImportTask
     {

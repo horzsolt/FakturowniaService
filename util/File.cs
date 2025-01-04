@@ -1,15 +1,14 @@
-﻿using log4net;
+﻿using FakturowniaService.task;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 
 namespace FakturowniaService
 {
     public static class File
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        public static void DeleteFiles(List<string> files)
+        public static void DeleteFiles(List<string> files, ILogger<ImportTask> log)
         {
             foreach (var filePath in files)
             {
@@ -18,11 +17,11 @@ namespace FakturowniaService
                     if (System.IO.File.Exists(filePath))
                     {
                         System.IO.File.Delete(filePath);
-                        log.Debug($"File deleted: {filePath}");
+                        log.LogDebug($"File deleted: {filePath}");
                     }
                     else
                     {
-                        log.Debug($"File not found: {filePath}");
+                        log.LogDebug($"File not found: {filePath}");
                     }
                 }
                 catch (Exception ex)

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-
 namespace FakturowniaService
 {
     class FakturPaymentImport(MetricsService metricsService, ILogger<FakturPaymentImport> log) : ImportTask
@@ -81,7 +80,7 @@ namespace FakturowniaService
                 if (paymentFiles != null && paymentFiles.Count > 0)
                 {
                     log.LogInformation("Cleaning up...");
-                    File.DeleteFiles(paymentFiles);
+                    File.DeleteFiles(paymentFiles, log);
                 }
             }
         }

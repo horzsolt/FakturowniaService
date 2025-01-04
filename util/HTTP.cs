@@ -1,11 +1,9 @@
 ﻿using FakturowniaService.task;
-using log4net;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -14,8 +12,6 @@ namespace FakturowniaService
 {
     public static class HTTP
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
         //TODO: Have only one method for downloading all data
         public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<ImportTask> log)
         {

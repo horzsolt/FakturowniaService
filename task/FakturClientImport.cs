@@ -82,7 +82,7 @@ namespace FakturowniaService
                 if (clientFiles != null && clientFiles.Count > 0)
                 {
                     log.LogInformation("Cleaning up...");
-                    File.DeleteFiles(clientFiles);
+                    File.DeleteFiles(clientFiles, log);
                 }
             }
         }
