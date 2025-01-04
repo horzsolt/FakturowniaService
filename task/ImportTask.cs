@@ -4,6 +4,6 @@ namespace FakturowniaService.task
 {
     public interface ImportTask
     {
-        void ExecuteTask(ILogger<FakturService> logger);
+        void ExecuteTask();
     }
 }

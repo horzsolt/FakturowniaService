@@ -1,26 +1,19 @@
 ﻿using FakturowniaService.task;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 
 namespace FakturowniaService
 {
-    class FakturProductImport : ImportTask
+    class FakturProductImport(MetricsService metricsService, ILogger<FakturPaymentImport> log) : ImportTask
     {
-        private readonly MetricsService metricsService;
-        private ILogger<FakturService> log;
         private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PRODUCT_API_URL_TEMPLATE");
-        public FakturProductImport(MetricsService metricsService)
-        {
-            this.metricsService = metricsService;
-        }
-        public void ExecuteTask(ILogger<FakturService> logger)
-        {
-            log = logger;
 
+        public void ExecuteTask()
+        {
             List<string> productFiles = null;
 
             try
@@ -34,7 +27,7 @@ namespace FakturowniaService
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
                           $"User Id={Environment.GetEnvironmentVariable("VIR_SQL_USER")};" +
                           $"Password={Environment.GetEnvironmentVariable("VIR_SQL_PASSWORD")};" +
-                          "Connection Timeout=500;";
+                          "Connection Timeout=500;Trust Server Certificate=true";
 
                 using (var connection = new SqlConnection(connectionString))
                 {

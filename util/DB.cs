@@ -1,9 +1,9 @@
-﻿using log4net;
+﻿using FakturowniaService.task;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Data;
-using System.Data.SqlClient;
-using System.Reflection;
+
 
 namespace FakturowniaService
 {
@@ -83,7 +83,7 @@ namespace FakturowniaService
             }
         }
 
-        public static void InsertProduct(Product product, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
+        public static void InsertProduct(Product product, SqlConnection connection, SqlTransaction transaction, ILogger<ImportTask> log)
         {
             log.LogInformation($"Inserting product {product.Id} into the database.");
 
@@ -206,7 +206,7 @@ namespace FakturowniaService
             }
         }
 
-        public static void InsertPayment(Payment payment, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
+        public static void InsertPayment(Payment payment, SqlConnection connection, SqlTransaction transaction, ILogger<ImportTask> log)
         {
             log.LogInformation($"Inserting payment {payment.Id} into the database.");
 
@@ -345,7 +345,7 @@ namespace FakturowniaService
 
         }
 
-        public static void InsertInvoiceHeader(Invoice invoice, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
+        public static void InsertInvoiceHeader(Invoice invoice, SqlConnection connection, SqlTransaction transaction, ILogger<ImportTask> log)
         {
             var query = @"
         INSERT INTO [dbo].[Fakturownia_InvoiceHead] (
@@ -613,7 +613,7 @@ namespace FakturowniaService
                 command.ExecuteNonQuery();
             }
         }
-        public static void InsertClient(Client client, SqlConnection connection, SqlTransaction transaction, ILogger<FakturService> log)
+        public static void InsertClient(Client client, SqlConnection connection, SqlTransaction transaction, ILogger<ImportTask> log)
         {
 
             log.LogInformation($"Inserting client {client.Id} into the database.");

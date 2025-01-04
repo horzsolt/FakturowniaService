@@ -1,7 +1,6 @@
 ﻿using FakturowniaService;
 using log4net;
 using System;
-using System.Configuration.Install;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
@@ -12,12 +11,13 @@ using Microsoft.Extensions.DependencyInjection;
 using FakturowniaService.task;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using FakturowniaService.util;
+using System.Configuration.Install;
 
 namespace FakturExport
 {
     internal class Program
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly String serviceName = "FakturService";
         private static readonly String serviceVersion = "1.0.0";
 
@@ -49,6 +49,7 @@ namespace FakturExport
 
             services.AddLogging(builder =>
             {
+                builder.SetMinimumLevel(LogLevel.Debug);
                 builder.AddOpenTelemetry(options =>
                 {
                     options.IncludeScopes = true;
@@ -85,6 +86,8 @@ namespace FakturExport
 
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+            logger.LogDebug("Framework: " + FRWK.GetEnvironmentVersion() + " " + FRWK.GetTargetFrameworkName() + " " + FRWK.GetFrameworkDescription());
 
             if (Environment.UserInteractive)
             {

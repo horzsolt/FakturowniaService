@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using FakturowniaService.task;
+using log4net;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace FakturowniaService
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         //TODO: Have only one method for downloading all data
-        public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<FakturService> log)
+        public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<ImportTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
@@ -76,7 +77,7 @@ namespace FakturowniaService
                 }
             }
         }
-        public static List<string> DownloadAllProducts(string apiUrlTemplate, ILogger<FakturService> log)
+        public static List<string> DownloadAllProducts(string apiUrlTemplate, ILogger<ImportTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
@@ -137,7 +138,7 @@ namespace FakturowniaService
             }
         }
 
-        public static List<string> DownloadAllPayments(string apiUrlTemplate, ILogger<FakturService> log)
+        public static List<string> DownloadAllPayments(string apiUrlTemplate, ILogger<ImportTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
@@ -198,7 +199,7 @@ namespace FakturowniaService
             }
         }
 
-        public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo, ILogger<FakturService> log)
+        public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo, ILogger<ImportTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;

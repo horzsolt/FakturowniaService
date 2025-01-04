@@ -1,12 +1,9 @@
 ﻿using FakturowniaService.task;
-using log4net.Repository.Hierarchy;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceProcess;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace FakturowniaService
@@ -32,7 +29,7 @@ namespace FakturowniaService
             {
                 foreach (var task in tasks)
                 {
-                    task.ExecuteTask(log);
+                    task.ExecuteTask();
                 }
             }
             catch (Exception ex)
@@ -59,7 +56,7 @@ namespace FakturowniaService
                 log.LogInformation("It is 3am. Start the Faktur import tasks.");
                 foreach (var task in tasks)
                 {
-                    task.ExecuteTask(log);
+                    task.ExecuteTask();
                 }
 
                 lastExecutionDate = now.Date;
