@@ -1,6 +1,6 @@
 ﻿namespace FakturowniaService.task
 {
-    public interface ImportTask
+    public interface ETLTask
     {
         void ExecuteTask();
     }

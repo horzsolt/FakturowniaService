@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace FakturowniaService
 {
-    class FakturPaymentImport(MetricsService metricsService, ILogger<FakturPaymentImport> log) : ImportTask
+    class FakturPaymentImport(MetricsService metricsService, ILogger<FakturPaymentImport> log) : ETLTask
     {
         private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PAYMENT_API_URL_TEMPLATE");
         public void ExecuteTask()

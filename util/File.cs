@@ -8,7 +8,7 @@ namespace FakturowniaService
 {
     public static class File
     {
-        public static void DeleteFiles(List<string> files, ILogger<ImportTask> log)
+        public static void DeleteFiles(List<string> files, ILogger<ETLTask> log)
         {
             foreach (var filePath in files)
             {

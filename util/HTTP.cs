@@ -13,7 +13,7 @@ namespace FakturowniaService
     public static class HTTP
     {
         //TODO: Have only one method for downloading all data
-        public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<ImportTask> log)
+        public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<ETLTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
@@ -73,7 +73,7 @@ namespace FakturowniaService
                 }
             }
         }
-        public static List<string> DownloadAllProducts(string apiUrlTemplate, ILogger<ImportTask> log)
+        public static List<string> DownloadAllProducts(string apiUrlTemplate, ILogger<ETLTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
@@ -134,7 +134,7 @@ namespace FakturowniaService
             }
         }
 
-        public static List<string> DownloadAllPayments(string apiUrlTemplate, ILogger<ImportTask> log)
+        public static List<string> DownloadAllPayments(string apiUrlTemplate, ILogger<ETLTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;
@@ -195,7 +195,7 @@ namespace FakturowniaService
             }
         }
 
-        public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo, ILogger<ImportTask> log)
+        public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo, ILogger<ETLTask> log)
         {
             string tempDirectory = Path.GetTempPath();
             int maxRetries = 5;

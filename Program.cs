@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.ServiceProcess;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
@@ -12,6 +11,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using FakturowniaService.util;
 using System.Configuration.Install;
+using Microsoft.Extensions.Hosting;
 
 namespace FakturExport
 {
@@ -20,10 +20,14 @@ namespace FakturExport
         private static readonly String serviceName = "FakturService";
         private static readonly String serviceVersion = "1.0.0";
 
-        private static void ConfigureServices(ServiceCollection services)
+        private static void ConfigureServices(HostApplicationBuilder appBuilder)
         {
+            appBuilder.Services.AddWindowsService(options =>
+            {
+                options.ServiceName = "VIR Faktur ETL service.";
+            });
 
-            services.AddOpenTelemetry()
+            appBuilder.Services.AddOpenTelemetry()
                 .WithTracing(builder =>
                 {
                     builder
@@ -44,9 +48,10 @@ namespace FakturExport
                         .AddRuntimeInstrumentation()
                         .AddHttpClientInstrumentation()
                         .AddOtlpExporter();
+                        //.AddConsoleExporter();
                 });
 
-            services.AddLogging(builder =>
+            appBuilder.Services.AddLogging(builder =>
             {
                 builder.SetMinimumLevel(LogLevel.Debug);
                 builder.AddOpenTelemetry(options =>
@@ -63,27 +68,28 @@ namespace FakturExport
                 builder.AddLog4Net(log4NetConfigFilePath);
             });
 
-            services.AddMetrics();
+            //appBuilder.Services.AddMetrics();
 
-            // Register the services
-            services.AddSingleton<MetricsService>();
+            appBuilder.Services.AddSingleton<MetricsService>();
 
-            services.AddTransient<ImportTask, FakturProductImport>();
-            services.AddTransient<ImportTask, FakturClientImport>();
-            services.AddTransient<ImportTask, FakturInvoiceImport>();
-            services.AddTransient<ImportTask, FakturPaymentImport>();
-            services.AddSingleton<FakturService>();
-
+            appBuilder.Services.AddTransient<ETLTask, FakturProductImport>();
+            appBuilder.Services.AddTransient<ETLTask, FakturClientImport>();
+            appBuilder.Services.AddTransient<ETLTask, FakturInvoiceImport>();
+            appBuilder.Services.AddTransient<ETLTask, FakturPaymentImport>();
+            appBuilder.Services.AddSingleton<FakturService>();
+            appBuilder.Services.AddHostedService<FakturService>();
+            appBuilder.Services.AddHostedService<JobStatusService>();
         }
 
         static void Main(string[] args)
         {
 
-            var services = new ServiceCollection();
+            //var services = new ServiceCollection();
+            HostApplicationBuilder appBuilder = Host.CreateApplicationBuilder(args);
 
-            ConfigureServices(services);
+            ConfigureServices(appBuilder);
 
-            var serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = appBuilder.Services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
             logger.LogDebug("Framework: " + FRWK.GetEnvironmentVersion() + " " + FRWK.GetTargetFrameworkName() + " " + FRWK.GetFrameworkDescription());
@@ -105,8 +111,12 @@ namespace FakturExport
                         using (logger.BeginScope("Console mode"))
                         {
                             logger.LogInformation("Starting the service in interactive mode.");
-                            var service = serviceProvider.GetRequiredService<FakturService>();
-                            service.StartAsConsole(null);
+                            var fakturService = serviceProvider.GetRequiredService<FakturService>();
+                            fakturService.StartAsConsole(null);
+
+                            /*var jobStatusService = serviceProvider.GetRequiredService<JobStatusService>();
+                            jobStatusService.StartAsConsole(null);
+                            */
                         }
                         break;
                 }
@@ -114,8 +124,10 @@ namespace FakturExport
             else
             {
                 logger.LogInformation("Starting the service as a Windows Service...");
-                ServiceBase[] servicesToRun = new ServiceBase[] { serviceProvider.GetRequiredService<FakturService>() };
-                ServiceBase.Run(servicesToRun);
+                //ServiceBase[] servicesToRun = new ServiceBase[] { serviceProvider.GetRequiredService<FakturService>() };
+                //ServiceBase.Run(servicesToRun);
+                IHost host = appBuilder.Build();
+                host.Run();
             }
 
             serviceProvider.Dispose();

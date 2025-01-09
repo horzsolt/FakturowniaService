@@ -10,6 +10,8 @@ namespace FakturowniaService
         private readonly Histogram<double> clientImportDuration;
         private readonly Histogram<double> invoiceImportDuration;
         private readonly Histogram<double> paymentImportDuration;
+        private readonly Histogram<double> jobStatusCheckDuration;
+        private readonly Gauge<int> jobStatus;
 
         public MetricsService(IMeterFactory meterFactory)
         {
@@ -30,7 +32,26 @@ namespace FakturowniaService
             invoiceImportDuration = meter.CreateHistogram<double>(
               name: "invoice_import_duration", unit: "ms",
               description: "Invoice import duration in milliseconds.");
+
+            jobStatusCheckDuration = meter.CreateHistogram<double>(
+              name: "jobstatus_import_duration", unit: "ms",
+              description: "Job status check duration in milliseconds.");
+
+            jobStatus = meter.CreateGauge<int>(
+              name: "job_execution_result_code", unit: "ms",
+              description: "The result code of the latest job execution.");
         }
+
+        public void RecordJobStatusResult(int resultCode)
+        {
+            jobStatus.Record(resultCode);
+        }
+
+        public void RecordJobStatusCheckDuration(double duration)
+        {
+            jobStatusCheckDuration.Record(duration);
+        }
+
         public void RecordProductImportDuration(double duration)
         {
             productImportDuration.Record(duration);

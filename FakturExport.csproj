@@ -14,9 +14,7 @@
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="service\FakturService.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Update="service\FakturService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Update="log4net.config">
@@ -50,6 +48,7 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.0" />
