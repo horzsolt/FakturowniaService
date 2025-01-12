@@ -12,6 +12,8 @@ using OpenTelemetry.Trace;
 using FakturowniaService.util;
 using System.Configuration.Install;
 using Microsoft.Extensions.Hosting;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace FakturExport
 {
@@ -68,17 +70,41 @@ namespace FakturExport
                 builder.AddLog4Net(log4NetConfigFilePath);
             });
 
-            //appBuilder.Services.AddMetrics();
-
             appBuilder.Services.AddSingleton<MetricsService>();
 
-            appBuilder.Services.AddTransient<ETLTask, FakturProductImport>();
-            appBuilder.Services.AddTransient<ETLTask, FakturClientImport>();
-            appBuilder.Services.AddTransient<ETLTask, FakturInvoiceImport>();
-            appBuilder.Services.AddTransient<ETLTask, FakturPaymentImport>();
-            appBuilder.Services.AddSingleton<FakturService>();
-            appBuilder.Services.AddHostedService<FakturService>();
-            appBuilder.Services.AddHostedService<JobStatusService>();
+            var assembly = Assembly.GetExecutingAssembly();
+
+            
+            // Register Faktur tasks
+            var fakturTasks = assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract && typeof(ETLTask).IsAssignableFrom(t) &&
+                            t.GetCustomAttribute<FakturTaskAttribute>() != null);
+            foreach (var task in fakturTasks)
+            {
+                appBuilder.Services.AddTransient(typeof(ETLTask), task);
+            }
+
+            // Register JobStatus tasks
+            var jobStatusTasks = assembly.GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract && typeof(ETLTask).IsAssignableFrom(t) &&
+                            t.GetCustomAttribute<JobStatusTaskAttribute>() != null);
+            foreach (var task in jobStatusTasks)
+            {
+                appBuilder.Services.AddTransient(typeof(ETLTask), task);
+            }
+            
+            appBuilder.Services.AddHostedService(sp =>
+                new FakturService(sp.GetRequiredService< ILogger < FakturService >>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                    .Where(t => t.GetType().GetCustomAttribute<FakturTaskAttribute>() != null)));
+
+            appBuilder.Services.AddHostedService(sp =>
+                new JobStatusService(sp.GetRequiredService<ILogger<JobStatusService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                    .Where(t => t.GetType().GetCustomAttribute<JobStatusTaskAttribute>() != null)));
+
+            appBuilder.Services.AddSingleton(sp =>
+                new JobStatusService(sp.GetRequiredService<ILogger<JobStatusService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                    .Where(t => t.GetType().GetCustomAttribute<JobStatusTaskAttribute>() != null)));
+
         }
 
         static void Main(string[] args)
@@ -111,12 +137,13 @@ namespace FakturExport
                         using (logger.BeginScope("Console mode"))
                         {
                             logger.LogInformation("Starting the service in interactive mode.");
-                            var fakturService = serviceProvider.GetRequiredService<FakturService>();
+                            /*var fakturService = serviceProvider.GetRequiredService<FakturService>();
                             fakturService.StartAsConsole(null);
-
-                            /*var jobStatusService = serviceProvider.GetRequiredService<JobStatusService>();
-                            jobStatusService.StartAsConsole(null);
                             */
+
+                            var jobStatusService = serviceProvider.GetRequiredService<JobStatusService>();
+                            jobStatusService.StartAsConsole(null);
+                            
                         }
                         break;
                 }

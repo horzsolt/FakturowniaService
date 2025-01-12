@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace FakturowniaService.task
 {
+    [JobStatusTask]
     class JobStatusCheck(MetricsService metricsService, ILogger<FakturPaymentImport> log) : ETLTask
     {
         public void ExecuteTask()
@@ -72,6 +73,8 @@ namespace FakturowniaService.task
                                 string executionTime = row["RunTime"] is DBNull ? String.Empty : row.Field<int>("RunTime").ToString();
                                 string duration = row["RunDuration"] is DBNull ? String.Empty : row.Field<int>("RunDuration").ToString();
                                 string message = row["Message"] is DBNull ? String.Empty : row.Field<string>("Message");
+
+                                if (executionTime.Length != 6) executionTime = "0" + executionTime;
 
                                 DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
                                 DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
