@@ -62,43 +62,57 @@ namespace FakturowniaService.task
 
                             if (dataTable.Rows.Count == 0)
                             {
+                                metricsService.JobExecutionStatus = 0;
                                 log.LogError("No records found.");
                                 return;
                             }
 
-                            foreach (DataRow row in dataTable.Rows)
+                            try
                             {
-                                string status = row["RunStatus"] is DBNull ? "-1" : row.Field<int>("RunStatus").ToString();
-                                string executionDate = row["RunDate"] is DBNull ? String.Empty : row.Field<int>("RunDate").ToString();
-                                string executionTime = row["RunTime"] is DBNull ? String.Empty : row.Field<int>("RunTime").ToString();
-                                string duration = row["RunDuration"] is DBNull ? String.Empty : row.Field<int>("RunDuration").ToString();
-                                string message = row["Message"] is DBNull ? String.Empty : row.Field<string>("Message");
 
-                                if (executionTime.Length != 6) executionTime = "0" + executionTime;
-
-                                DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
-                                DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
-
-                                string secondsPart = duration.Substring(duration.Length - 2, 2);
-                                string minutesPart = duration.Substring(0, duration.Length - 2);
-                                int minutes = string.IsNullOrEmpty(minutesPart) ? 0 : int.Parse(minutesPart);
-                                int seconds = int.Parse(secondsPart);
-                                string durationFormatted = new TimeSpan(0, minutes, seconds).ToString(@"hh\:mm\:ss");
-
-                                string executedAt = new DateTime(
-                                    date.Year, date.Month, date.Day,
-                                    time.Hour, time.Minute, time.Second).ToString("yyyy-MM-dd HH:mm:ss");
-
-                                if (status == "1")
+                                foreach (DataRow row in dataTable.Rows)
                                 {
-                                    log.LogInformation($"QAD_VIR_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
-                                }
-                                else
-                                {
-                                    log.LogError($"QAD_VIR_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
-                                }
+                                    string status = row["RunStatus"] is DBNull ? "-1" : row.Field<int>("RunStatus").ToString();
+                                    string executionDate = row["RunDate"] is DBNull ? String.Empty : row.Field<int>("RunDate").ToString();
+                                    string executionTime = row["RunTime"] is DBNull ? String.Empty : row.Field<int>("RunTime").ToString();
+                                    string duration = row["RunDuration"] is DBNull ? String.Empty : row.Field<int>("RunDuration").ToString();
+                                    string message = row["Message"] is DBNull ? String.Empty : row.Field<string>("Message");
 
-                                metricsService.RecordJobStatusResult(int.Parse(status));
+                                    if (executionTime.Length != 6) executionTime = "0" + executionTime;
+
+                                    log.LogDebug($"Last job execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
+
+                                    DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
+                                    DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
+
+                                    string secondsPart = duration.Substring(duration.Length - 2, 2);
+                                    string minutesPart = duration.Substring(0, duration.Length - 2);
+                                    int minutes = string.IsNullOrEmpty(minutesPart) ? 0 : int.Parse(minutesPart);
+                                    int seconds = int.Parse(secondsPart);
+                                    TimeSpan _duration = new TimeSpan(0, minutes, seconds);
+                                    string durationFormatted = _duration.ToString(@"hh\:mm\:ss");
+
+                                    string executedAt = new DateTime(
+                                        date.Year, date.Month, date.Day,
+                                        time.Hour, time.Minute, time.Second).ToString("yyyy-MM-dd HH:mm:ss");
+
+                                    if (status == "1")
+                                    {
+                                        log.LogInformation($"QAD_VIR_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                    }
+                                    else
+                                    {
+                                        log.LogError($"QAD_VIR_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                    }
+
+                                    metricsService.JobExecutionStatus = (int.Parse(status));
+                                    metricsService.RecordJobExecutionDuration(_duration.TotalSeconds);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                metricsService.JobExecutionStatus = 0;
+                                log.LogError($"Error: {ex}");
                             }
                         }
                     }

@@ -94,7 +94,7 @@ namespace FakturowniaService
 
         private async Task DailyTask(CancellationToken stoppingToken)
         {
-            log.LogInformation("It is 6am. Start the JobStatus task as a DailyTask.");
+            log.LogInformation($"It is {DateTime.Now:yyyy-MM-dd HH:mm:ss}. Start the JobStatus task as a DailyTask.");
             foreach (var task in tasks)
             {
                 task.ExecuteTask();

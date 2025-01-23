@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.Metrics;
 
 namespace FakturowniaService
@@ -10,46 +10,59 @@ namespace FakturowniaService
         private readonly Histogram<double> clientImportDuration;
         private readonly Histogram<double> invoiceImportDuration;
         private readonly Histogram<double> paymentImportDuration;
-        private readonly Histogram<double> jobStatusCheckDuration;
-        private readonly Gauge<int> jobStatus;
-
-        public MetricsService(IMeterFactory meterFactory)
+        private readonly Histogram<double> jobExecutionDuration;
+        private int jobExecutionStatus;
+        private readonly ILogger<MetricsService> log;
+        public int JobExecutionStatus
         {
+            get
+            {
+                //log.LogDebug($"JobExecutionStatus was queried, value is {jobExecutionStatus}");
+                return jobExecutionStatus;
+            }
+            set
+            {
+                jobExecutionStatus = value;
+            }
+        }
+
+        public MetricsService(IMeterFactory meterFactory, ILogger<MetricsService> logger)
+        {
+            JobExecutionStatus = 1;
+            log = logger;
             meter = meterFactory.Create("FakturService", "1.0.0");
 
             productImportDuration = meter.CreateHistogram<double>(
-              name: "product_import_duration", unit: "ms",
-              description: "Product import duration in milliseconds.");
+              name: "product_import_duration", unit: "seconds",
+              description: "Product import duration in seconds.");
 
             clientImportDuration = meter.CreateHistogram<double>(
-              name: "client_import_duration", unit: "ms",
-              description: "Client import duration in milliseconds.");
+              name: "client_import_duration", unit: "seconds",
+              description: "Client import duration in econds.");
 
             paymentImportDuration = meter.CreateHistogram<double>(
-              name: "payment_import_duration", unit: "ms",
-              description: "Payment import duration in milliseconds.");
+              name: "payment_import_duration", unit: "seconds",
+              description: "Payment import duration in seconds.");
 
             invoiceImportDuration = meter.CreateHistogram<double>(
-              name: "invoice_import_duration", unit: "ms",
-              description: "Invoice import duration in milliseconds.");
+              name: "invoice_import_duration", unit: "seconds",
+              description: "Invoice import duration in seconds.");
 
-            jobStatusCheckDuration = meter.CreateHistogram<double>(
-              name: "jobstatus_import_duration", unit: "ms",
-              description: "Job status check duration in milliseconds.");
+            jobExecutionDuration = meter.CreateHistogram<double>(
+              name: "jobs_execution_duration", unit: "seconds",
+              description: "Job execution duration in seconds.");
 
-            jobStatus = meter.CreateGauge<int>(
-              name: "job_execution_result_code", unit: "ms",
-              description: "The result code of the latest job execution.");
+            meter.CreateObservableGauge(
+                "job_execution_status",
+                () => new Measurement<int>(JobExecutionStatus),
+                "VIR Job Execution Status",
+                "The result code of the latest MSSQL QAD-VIR refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
+            );
         }
 
-        public void RecordJobStatusResult(int resultCode)
+        public void RecordJobExecutionDuration(double duration)
         {
-            jobStatus.Record(resultCode);
-        }
-
-        public void RecordJobStatusCheckDuration(double duration)
-        {
-            jobStatusCheckDuration.Record(duration);
+            jobExecutionDuration.Record(duration);
         }
 
         public void RecordProductImportDuration(double duration)
