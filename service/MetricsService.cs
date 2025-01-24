@@ -12,12 +12,13 @@ namespace FakturowniaService
         private readonly Histogram<double> paymentImportDuration;
         private readonly Histogram<double> jobExecutionDuration;
         private int jobExecutionStatus;
+        private int arbevRecordCount;
+        private int arbevRecordCountDiff;
         private readonly ILogger<MetricsService> log;
         public int JobExecutionStatus
         {
             get
             {
-                //log.LogDebug($"JobExecutionStatus was queried, value is {jobExecutionStatus}");
                 return jobExecutionStatus;
             }
             set
@@ -26,9 +27,36 @@ namespace FakturowniaService
             }
         }
 
+        public int ArbevRecordCount
+        {
+            get
+            {
+                return arbevRecordCount;
+            }
+            set
+            {
+                arbevRecordCount = value;
+            }
+        }
+
+        public int ArbevRecordCountDiff
+        {
+            get
+            {
+                return arbevRecordCountDiff;
+            }
+            set
+            {
+                arbevRecordCountDiff = value;
+            }
+        }
+
         public MetricsService(IMeterFactory meterFactory, ILogger<MetricsService> logger)
         {
             JobExecutionStatus = 1;
+            ArbevRecordCount = 1;
+            ArbevRecordCountDiff = 1;
+
             log = logger;
             meter = meterFactory.Create("FakturService", "1.0.0");
 
@@ -49,7 +77,7 @@ namespace FakturowniaService
               description: "Invoice import duration in seconds.");
 
             jobExecutionDuration = meter.CreateHistogram<double>(
-              name: "jobs_execution_duration", unit: "seconds",
+              name: "job_execution_duration", unit: "seconds",
               description: "Job execution duration in seconds.");
 
             meter.CreateObservableGauge(
@@ -58,10 +86,25 @@ namespace FakturowniaService
                 "VIR Job Execution Status",
                 "The result code of the latest MSSQL QAD-VIR refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
             );
+
+            meter.CreateObservableGauge(
+                "arbev_recordcount",
+                () => new Measurement<int>(ArbevRecordCount),
+                "VIR ARBEV record count",
+                "How many records are currently in the ARBEV view."
+            );
+
+            meter.CreateObservableGauge(
+                "arbev_recordcount_diff",
+                () => new Measurement<int>(ArbevRecordCountDiff),
+                "VIR ARBEV record count difference",
+                "Current - previous record count in the ARBEV view"
+            );
         }
 
         public void RecordJobExecutionDuration(double duration)
         {
+            log.LogDebug($"RecordJobExecutionDuration {duration}");
             jobExecutionDuration.Record(duration);
         }
 

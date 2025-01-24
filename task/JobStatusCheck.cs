@@ -3,6 +3,7 @@ using System;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace FakturowniaService.task
 {
@@ -115,10 +116,27 @@ namespace FakturowniaService.task
                                 log.LogError($"Error: {ex}");
                             }
                         }
-                    }
 
-                    stopwatch.Stop();
-                    metricsService.RecordProductImportDuration(stopwatch.Elapsed.TotalSeconds);
+                        query = @"
+                        SELECT TOP 2 [record_count]
+                        FROM [vir].[dbo].[t_qad_arbevetel_import_log]
+                        ORDER BY [date] DESC";
+
+                        List<int> recordCounts = new List<int>();
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                recordCounts.Add(reader.GetInt32(0));
+                            }
+                        }
+
+                        int latestRecordCount = recordCounts.Count > 0 ? recordCounts[0] : 0;
+                        int previousRecordCount = recordCounts.Count > 1 ? recordCounts[1] : 0;
+
+                        metricsService.ArbevRecordCount = latestRecordCount;
+                        metricsService.ArbevRecordCountDiff = latestRecordCount - previousRecordCount;
+                    }
                 }
             }
             catch (Exception ex)
