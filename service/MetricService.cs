@@ -10,12 +10,23 @@ namespace FakturowniaService
         private readonly Histogram<double> clientImportDuration;
         private readonly Histogram<double> invoiceImportDuration;
         private readonly Histogram<double> paymentImportDuration;
-        private readonly Histogram<double> jobExecutionDuration;
         private int jobExecutionStatus;
         private int revenueRecordCount;
         private int revenueRecordCountDelta;
+        private double executionDuration;
         private decimal revenueSum;
         private readonly ILogger<MetricService> log;
+        public double JobExecutionDuration
+        {
+            get
+            {
+                return executionDuration;
+            }
+            set
+            {
+                executionDuration = value;
+            }
+        }
         public int JobExecutionStatus
         {
             get
@@ -70,6 +81,7 @@ namespace FakturowniaService
             RevenueRecordCount = 1;
             RevenueRecordCountDelta = 1;
             RevenueSum = 0;
+            JobExecutionDuration = 0;
             log = logger;
             meter = meterFactory.Create(serviceName, serviceVersion);
 
@@ -88,10 +100,6 @@ namespace FakturowniaService
             invoiceImportDuration = meter.CreateHistogram<double>(
               name: "faktur_invoice_import_duration", unit: "seconds",
               description: "Invoice import duration in seconds.");
-
-            jobExecutionDuration = meter.CreateHistogram<double>(
-              name: "revenue_job_execution_duration", unit: "seconds",
-              description: "Job execution duration in seconds.");
 
             meter.CreateObservableGauge(
                 name: "revenue_job_execution_status",
@@ -121,12 +129,13 @@ namespace FakturowniaService
                 observeValue: () => new Measurement<decimal>(RevenueSum),
                 description: "VIR Revenue summary value."
             );
-        }
 
-        public void RecordJobExecutionDuration(double duration)
-        {
-            log.LogDebug($"RecordJobExecutionDuration {duration}");
-            jobExecutionDuration.Record(duration);
+            meter.CreateObservableGauge(
+                name: "revenue_job_execution_duration",
+                unit: "seconds",
+                observeValue: () => new Measurement<double>(JobExecutionDuration),
+                description: "VIR Revenue job duration."
+            );
         }
 
         public void RecordProductImportDuration(double duration)

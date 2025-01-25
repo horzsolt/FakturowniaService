@@ -107,7 +107,7 @@ namespace FakturowniaService.task
                                     }
 
                                     metricsService.JobExecutionStatus = (int.Parse(status));
-                                    metricsService.RecordJobExecutionDuration(_duration.TotalSeconds);
+                                    metricsService.JobExecutionDuration = _duration.TotalSeconds;
                                 }
                             }
                             catch (Exception ex)
