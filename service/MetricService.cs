@@ -74,49 +74,49 @@ namespace FakturowniaService
             meter = meterFactory.Create(serviceName, serviceVersion);
 
             productImportDuration = meter.CreateHistogram<double>(
-              name: "product_import_duration", unit: "seconds",
+              name: "faktur_product_import_duration", unit: "seconds",
               description: "Product import duration in seconds.");
 
             clientImportDuration = meter.CreateHistogram<double>(
-              name: "client_import_duration", unit: "seconds",
+              name: "faktur_client_import_duration", unit: "seconds",
               description: "Client import duration in econds.");
 
             paymentImportDuration = meter.CreateHistogram<double>(
-              name: "payment_import_duration", unit: "seconds",
+              name: "faktur_payment_import_duration", unit: "seconds",
               description: "Payment import duration in seconds.");
 
             invoiceImportDuration = meter.CreateHistogram<double>(
-              name: "invoice_import_duration", unit: "seconds",
+              name: "faktur_invoice_import_duration", unit: "seconds",
               description: "Invoice import duration in seconds.");
 
             jobExecutionDuration = meter.CreateHistogram<double>(
-              name: "job_execution_duration", unit: "seconds",
+              name: "revenue_job_execution_duration", unit: "seconds",
               description: "Job execution duration in seconds.");
 
             meter.CreateObservableGauge(
-                name: "job_execution_status",
-                unit: "status",
+                name: "revenue_job_execution_status",
+                unit: "value",
                 observeValue: () => new Measurement<int>(JobExecutionStatus),
                 description:
                 "The result code of the latest MSSQL QAD-VIR refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
             );
 
             meter.CreateObservableGauge(
-                name: "revenue_recordcount",
-                unit: "records",
+                name: "revenue_job_record",
+                unit: "count",
                 observeValue: () => new Measurement<int>(RevenueRecordCount),
                 description: "VIR Revenue record count."
             );
 
             meter.CreateObservableGauge(
-                name: "revenue_recordcount_delta",
-                unit: "numbers",
+                name: "revenue_job_record_delta",
+                unit: "count",
                 observeValue : () => new Measurement<int>(RevenueRecordCountDelta),
                 description: "VIR Revenue record count delta."
             );
 
             meter.CreateObservableGauge(
-                name: "revenue_sum",
+                name: "revenue_job_revenue_sum",
                 unit: "money",
                 observeValue: () => new Measurement<decimal>(RevenueSum),
                 description: "VIR Revenue summary value."

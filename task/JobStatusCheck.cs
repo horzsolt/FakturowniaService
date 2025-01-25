@@ -143,6 +143,8 @@ namespace FakturowniaService.task
                         metricsService.RevenueRecordCount = latestRecordCount;
                         metricsService.RevenueRecordCountDelta = latestRecordCount - previousRecordCount;
                         metricsService.RevenueSum = latestArbevSum;
+
+                        log.LogDebug($"Recorded metrics: RevenueRecordCount {latestRecordCount}, RevenueRecordCountDelta {latestRecordCount - previousRecordCount}, RevenueSum {latestArbevSum}");
                     }
                 }
             }
