@@ -10,7 +10,6 @@ using System.Timers;
 
 namespace FakturowniaService
 {
-    //TODO: Each backgroundservice has to derive from a parent, that implements the task execution logic
     public class JobStatusService : BackgroundService
     {
         private DateTime lastExecutionDate;
@@ -27,38 +26,11 @@ namespace FakturowniaService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                /*
-                // Calculate the next 6 AM
                 var now = DateTime.Now;
-                var nextRun = now.Date.AddDays(now.Hour >= 6 ? 1 : 0).AddHours(6);
-                var delay = nextRun - now;
-                */
-
-                var now = DateTime.Now;
-
-                var runTimes = new[]
-                {
-                    now.Date.AddHours(6),
-                    now.Date.AddHours(13).AddMinutes(30)
-                };
-
-                DateTime nextRun;
-                if (now < runTimes[0])
-                {
-                    nextRun = runTimes[0]; // Next run is 6:00 AM today
-                }
-                else if (now < runTimes[1])
-                {
-                    nextRun = runTimes[1]; // Next run is 1:30 PM today
-                }
-                else
-                {
-                    nextRun = runTimes[0].AddDays(1); // Both times passed; schedule 6:00 AM tomorrow
-                }
-
+                var nextRun = now.AddHours(1).Date.AddHours(now.Hour + 1);
                 var delay = nextRun - now;
 
-                var readableDelay = $"{delay.Days} days, {delay.Hours} hours, {delay.Minutes} minutes, and {delay.Seconds} seconds";
+                var readableDelay = $"{delay.Hours} hours, {delay.Minutes} minutes, and {delay.Seconds} seconds";
                 log.LogInformation($"Next task scheduled to run in: {readableDelay}");
 
                 try
@@ -76,6 +48,7 @@ namespace FakturowniaService
                 }
             }
         }
+
 
         public void StartAsConsole(string[] args)
         {
@@ -101,22 +74,6 @@ namespace FakturowniaService
             }
 
             await Task.CompletedTask;
-        }
-
-        private void OnTimedEvent(object sender, ElapsedEventArgs e)
-        {
-            DateTime now = DateTime.Now;
-            // Check if the time is 6:00 AM and if the task has not been executed today
-            if (now.Hour == 6 && now.Minute == 0 && lastExecutionDate.Date != now.Date)
-            {
-                log.LogInformation("It is 6am. Start the JobStatus tasks as an OnTimedEvent.");
-                foreach (var task in tasks)
-                {
-                    task.ExecuteTask();
-                }
-
-                lastExecutionDate = now.Date;
-            }
         }
     }
 }
