@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace FakturowniaService
 {
     [FakturTask]
-    class FakturInvoiceImport(MetricsService metricsService, ILogger<FakturInvoiceImport> log) : ETLTask
+    class FakturInvoiceImport(MetricService metricsService, ILogger<FakturInvoiceImport> log) : ETLTask
     {
         private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_API_URL_TEMPLATE");
 

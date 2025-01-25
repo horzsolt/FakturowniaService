@@ -3,7 +3,7 @@ using System.Diagnostics.Metrics;
 
 namespace FakturowniaService
 {
-    public class MetricsService
+    public class MetricService
     {
         private readonly Meter meter;
         private readonly Histogram<double> productImportDuration;
@@ -12,9 +12,10 @@ namespace FakturowniaService
         private readonly Histogram<double> paymentImportDuration;
         private readonly Histogram<double> jobExecutionDuration;
         private int jobExecutionStatus;
-        private int arbevRecordCount;
-        private int arbevRecordCountDiff;
-        private readonly ILogger<MetricsService> log;
+        private int revenueRecordCount;
+        private int revenueRecordCountDelta;
+        private decimal revenueSum;
+        private readonly ILogger<MetricService> log;
         public int JobExecutionStatus
         {
             get
@@ -27,38 +28,50 @@ namespace FakturowniaService
             }
         }
 
-        public int ArbevRecordCount
+        public int RevenueRecordCount
         {
             get
             {
-                return arbevRecordCount;
+                return revenueRecordCount;
             }
             set
             {
-                arbevRecordCount = value;
+                revenueRecordCount = value;
             }
         }
 
-        public int ArbevRecordCountDiff
+        public int RevenueRecordCountDelta
         {
             get
             {
-                return arbevRecordCountDiff;
+                return revenueRecordCountDelta;
             }
             set
             {
-                arbevRecordCountDiff = value;
+                revenueRecordCountDelta = value;
             }
         }
 
-        public MetricsService(IMeterFactory meterFactory, ILogger<MetricsService> logger)
+        public decimal RevenueSum
+        {
+            get
+            {
+                return revenueSum;
+            }
+            set
+            {
+                revenueSum = value;
+            }
+        }
+
+        public MetricService(IMeterFactory meterFactory, ILogger<MetricService> logger, string serviceName, string serviceVersion)
         {
             JobExecutionStatus = 1;
-            ArbevRecordCount = 1;
-            ArbevRecordCountDiff = 1;
-
+            RevenueRecordCount = 1;
+            RevenueRecordCountDelta = 1;
+            RevenueSum = 0;
             log = logger;
-            meter = meterFactory.Create("FakturService", "1.0.0");
+            meter = meterFactory.Create(serviceName, serviceVersion);
 
             productImportDuration = meter.CreateHistogram<double>(
               name: "product_import_duration", unit: "seconds",
@@ -81,24 +94,32 @@ namespace FakturowniaService
               description: "Job execution duration in seconds.");
 
             meter.CreateObservableGauge(
-                "job_execution_status",
-                () => new Measurement<int>(JobExecutionStatus),
-                "VIR Job Execution Status",
+                name: "job_execution_status",
+                unit: "status",
+                observeValue: () => new Measurement<int>(JobExecutionStatus),
+                description:
                 "The result code of the latest MSSQL QAD-VIR refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
             );
 
             meter.CreateObservableGauge(
-                "arbev_recordcount",
-                () => new Measurement<int>(ArbevRecordCount),
-                "VIR ARBEV record count",
-                "How many records are currently in the ARBEV view."
+                name: "revenue_recordcount",
+                unit: "records",
+                observeValue: () => new Measurement<int>(RevenueRecordCount),
+                description: "VIR Revenue record count."
             );
 
             meter.CreateObservableGauge(
-                "arbev_recordcount_diff",
-                () => new Measurement<int>(ArbevRecordCountDiff),
-                "VIR ARBEV record count difference",
-                "Current - previous record count in the ARBEV view"
+                name: "revenue_recordcount_delta",
+                unit: "numbers",
+                observeValue : () => new Measurement<int>(RevenueRecordCountDelta),
+                description: "VIR Revenue record count delta."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue_sum",
+                unit: "money",
+                observeValue: () => new Measurement<decimal>(RevenueSum),
+                description: "VIR Revenue summary value."
             );
         }
 

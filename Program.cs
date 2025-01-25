@@ -14,19 +14,20 @@ using System.Configuration.Install;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 
 namespace FakturExport
 {
     internal class Program
     {
-        private static readonly String serviceName = "FakturService";
+        private static readonly String serviceName = "VIR Faktur ETL service";
         private static readonly String serviceVersion = "1.0.0";
 
         private static void ConfigureServices(HostApplicationBuilder appBuilder)
         {
             appBuilder.Services.AddWindowsService(options =>
             {
-                options.ServiceName = "VIR Faktur ETL service.";
+                options.ServiceName = serviceName;
             });
 
             appBuilder.Services.AddOpenTelemetry()
@@ -70,7 +71,13 @@ namespace FakturExport
                 builder.AddLog4Net(log4NetConfigFilePath);
             });
 
-            appBuilder.Services.AddSingleton<MetricsService>();
+            appBuilder.Services.AddSingleton<MetricService>(provider =>
+            {
+                var meterFactory = provider.GetRequiredService<IMeterFactory>();
+                var logger = provider.GetRequiredService<ILogger<MetricService>>();
+
+                return new MetricService(meterFactory, logger, serviceName, serviceVersion);
+            });
 
             var assembly = Assembly.GetExecutingAssembly();
 

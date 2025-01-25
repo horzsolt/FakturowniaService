@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace FakturowniaService.task
 {
     [JobStatusTask]
-    class JobStatusCheck(MetricsService metricsService, ILogger<FakturPaymentImport> log) : ETLTask
+    class JobStatusCheck(MetricService metricsService, ILogger<FakturPaymentImport> log) : ETLTask
     {
         public void ExecuteTask()
         {
@@ -116,26 +116,33 @@ namespace FakturowniaService.task
                                 log.LogError($"Error: {ex}");
                             }
                         }
+                    }
 
-                        query = @"
-                        SELECT TOP 2 [record_count]
-                        FROM [vir].[dbo].[t_qad_arbevetel_import_log]
-                        ORDER BY [date] DESC";
+                    query = @"
+                    SELECT TOP 2 [record_count], sum_arbevetel 
+                    FROM [vir].[dbo].[t_qad_arbevetel_import_log]
+                    ORDER BY [date] DESC";
 
-                        List<int> recordCounts = new List<int>();
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.CommandTimeout = 500;
+
+                        List<(int RecordCount, decimal SumArbevetel)> results = new List<(int, decimal)>();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                recordCounts.Add(reader.GetInt32(0));
+                                results.Add((reader.GetInt32(0), reader.GetDecimal(1)));
                             }
                         }
 
-                        int latestRecordCount = recordCounts.Count > 0 ? recordCounts[0] : 0;
-                        int previousRecordCount = recordCounts.Count > 1 ? recordCounts[1] : 0;
+                        int latestRecordCount = results.Count > 0 ? results[0].RecordCount : 0;
+                        int previousRecordCount = results.Count > 1 ? results[1].RecordCount : 0;
+                        decimal latestArbevSum = results.Count > 0 ? results[0].SumArbevetel : 0;
 
-                        metricsService.ArbevRecordCount = latestRecordCount;
-                        metricsService.ArbevRecordCountDiff = latestRecordCount - previousRecordCount;
+                        metricsService.RevenueRecordCount = latestRecordCount;
+                        metricsService.RevenueRecordCountDelta = latestRecordCount - previousRecordCount;
+                        metricsService.RevenueSum = latestArbevSum;
                     }
                 }
             }
