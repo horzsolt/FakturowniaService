@@ -27,7 +27,7 @@ namespace FakturowniaService
             while (!stoppingToken.IsCancellationRequested)
             {
                 var now = DateTime.Now;
-                var nextRun = now.AddHours(1).Date.AddHours(now.Hour + 1);
+                var nextRun = now.AddHours(1).Date.AddHours(now.AddHours(1).Hour);
                 var delay = nextRun - now;
 
                 var readableDelay = $"{delay.Hours} hours, {delay.Minutes} minutes, and {delay.Seconds} seconds";
