@@ -22,6 +22,10 @@ namespace FakturowniaService
         private int revenue2025RecordCountDelta;
         private double execution2025Duration;
         private decimal revenue2025Sum;
+
+        private int job2025_2ExecutionStatus;
+        private double execution2025_2Duration;
+
         private readonly ILogger<MetricService> log;
         public double JobExecutionDuration
         {
@@ -105,6 +109,28 @@ namespace FakturowniaService
             }
         }
 
+        public double Job2025_2ExecutionDuration
+        {
+            get
+            {
+                return execution2025_2Duration;
+            }
+            set
+            {
+                execution2025_2Duration = value;
+            }
+        }
+        public int Job2025_2ExecutionStatus
+        {
+            get
+            {
+                return job2025_2ExecutionStatus;
+            }
+            set
+            {
+                job2025_2ExecutionStatus = value;
+            }
+        }
         public int Revenue2025RecordCount
         {
             get
