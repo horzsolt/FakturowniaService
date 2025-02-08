@@ -63,7 +63,7 @@ namespace FakturowniaService.task
 
                             if (dataTable.Rows.Count == 0)
                             {
-                                metricsService.JobExecutionStatus = 0;
+                                metricsService.Job2025ExecutionStatus = 0;
                                 log.LogError("No records found.");
                                 return;
                             }
@@ -106,13 +106,13 @@ namespace FakturowniaService.task
                                         log.LogError($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
 
-                                    metricsService.JobExecutionStatus = (int.Parse(status));
-                                    metricsService.JobExecutionDuration = _duration.TotalSeconds;
+                                    metricsService.Job2025ExecutionStatus = (int.Parse(status));
+                                    metricsService.Job2025ExecutionDuration = _duration.TotalSeconds;
                                 }
                             }
                             catch (Exception ex)
                             {
-                                metricsService.JobExecutionStatus = 0;
+                                metricsService.Job2025ExecutionStatus = 0;
                                 log.LogError($"Error: {ex}");
                             }
                         }
@@ -120,7 +120,7 @@ namespace FakturowniaService.task
 
                     query = @"
                     SELECT TOP 2 [record_count], sum_arbevetel 
-                    FROM [vir].[dbo].[t_qad_arbevetel_import_log]
+                    FROM [vir].[dbo].[t_qad_arbevetel_import_log_2025]
                     ORDER BY [date] DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -140,9 +140,9 @@ namespace FakturowniaService.task
                         int previousRecordCount = results.Count > 1 ? results[1].RecordCount : 0;
                         decimal latestArbevSum = results.Count > 0 ? results[0].SumArbevetel : 0;
 
-                        metricsService.RevenueRecordCount = latestRecordCount;
-                        metricsService.RevenueRecordCountDelta = latestRecordCount - previousRecordCount;
-                        metricsService.RevenueSum = latestArbevSum;
+                        metricsService.Revenue2025RecordCount = latestRecordCount;
+                        metricsService.Revenue2025RecordCountDelta = latestRecordCount - previousRecordCount;
+                        metricsService.Revenue2025Sum = latestArbevSum;
 
                         log.LogDebug($"Recorded metrics: RevenueRecordCount {latestRecordCount}, RevenueRecordCountDelta {latestRecordCount - previousRecordCount}, RevenueSum {latestArbevSum}");
                     }
