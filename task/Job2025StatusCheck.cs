@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace FakturowniaService.task
 {
     [JobStatusTask]
-    class JobStatusCheck(MetricService metricsService, ILogger<JobStatusCheck> log) : ETLTask
+    class Job2025StatusCheck(MetricService metricsService, ILogger<Job2025StatusCheck> log) : ETLTask
     {
         public void ExecuteTask()
         {
@@ -43,7 +43,7 @@ namespace FakturowniaService.task
                             msdb.dbo.sysjobhistory AS h
                             ON j.job_id = h.job_id
                         WHERE 
-                            j.name = 'QAD_VIR_frissites'
+                            j.name = 'QAD_VIR_2025_frissites'
                             AND h.instance_id = (
                                 SELECT MAX(instance_id) 
                                 FROM msdb.dbo.sysjobhistory 
@@ -99,11 +99,11 @@ namespace FakturowniaService.task
 
                                     if (status == "1")
                                     {
-                                        log.LogInformation($"QAD_VIR_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogInformation($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
                                     else
                                     {
-                                        log.LogError($"QAD_VIR_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogError($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
 
                                     metricsService.JobExecutionStatus = (int.Parse(status));

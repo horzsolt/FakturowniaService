@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FakturowniaService.util;
+using System;
 using System.Text.Json.Serialization;
 
 namespace FakturowniaService
@@ -49,6 +50,8 @@ namespace FakturowniaService
         public string Invoice_City { get; set; }
         public string Invoice_Post_Code { get; set; }
         public string Referrer { get; set; }
+
+        [JsonConverter(typeof(IntegerStringConverter))]
         public int? Quantity { get; set; }
         public string Promocode { get; set; }
         public bool? Deleted { get; set; }

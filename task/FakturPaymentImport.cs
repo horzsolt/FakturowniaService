@@ -1,4 +1,5 @@
 ﻿using FakturowniaService.task;
+using FakturowniaService.util;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -44,11 +45,11 @@ namespace FakturowniaService
 
                                 var settings = new JsonSerializerSettings
                                 {
-                                    Converters = new List<JsonConverter> { new DecimalStringConverter() }
+                                    Converters = new List<JsonConverter> { new DecimalStringConverter(), new IntegerStringConverter() }
                                 };
 
                                 var json = System.IO.File.ReadAllText(file);
-                                var payments = JsonConvert.DeserializeObject<List<Payment>>(json);
+                                var payments = JsonConvert.DeserializeObject<List<Payment>>(json, settings);
 
                                 foreach (var payment in payments)
                                 {

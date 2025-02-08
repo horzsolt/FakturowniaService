@@ -112,6 +112,10 @@ namespace FakturExport
                 new JobStatusService(sp.GetRequiredService<ILogger<JobStatusService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
                     .Where(t => t.GetType().GetCustomAttribute<JobStatusTaskAttribute>() != null)));
 
+            appBuilder.Services.AddSingleton(sp =>
+                new FakturService(sp.GetRequiredService<ILogger<FakturService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                    .Where(t => t.GetType().GetCustomAttribute<FakturTaskAttribute>() != null)));
+
         }
 
         static void Main(string[] args)
@@ -144,13 +148,14 @@ namespace FakturExport
                         using (logger.BeginScope("Console mode"))
                         {
                             logger.LogInformation("Starting the service in interactive mode.");
-                            /*var fakturService = serviceProvider.GetRequiredService<FakturService>();
+                            var fakturService = serviceProvider.GetRequiredService<FakturService>();
                             fakturService.StartAsConsole(null);
+                            
+
+                            /*var jobStatusService = serviceProvider.GetRequiredService<JobStatusService>();
+                            jobStatusService.StartAsConsole(null);
                             */
 
-                            var jobStatusService = serviceProvider.GetRequiredService<JobStatusService>();
-                            jobStatusService.StartAsConsole(null);
-                            
                         }
                         break;
                 }

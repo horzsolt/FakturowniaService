@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Timers;
 
 namespace FakturowniaService
 {
@@ -67,7 +66,7 @@ namespace FakturowniaService
 
         private async Task DailyTask(CancellationToken stoppingToken)
         {
-            log.LogInformation($"It is {DateTime.Now:yyyy-MM-dd HH:mm:ss}. Start the JobStatus task as a DailyTask.");
+            log.LogInformation($"It is {DateTime.Now:yyyy-MM-dd HH:mm:ss}. Start the JobStatus tasks as a DailyTask.");
             foreach (var task in tasks)
             {
                 task.ExecuteTask();
