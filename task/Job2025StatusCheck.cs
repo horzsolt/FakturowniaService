@@ -180,7 +180,7 @@ namespace FakturowniaService.task
 
                                     if (executionTime.Length != 6) executionTime = "0" + executionTime;
 
-                                    log.LogDebug($"Last job execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
+                                    log.LogDebug($"Last job_2 execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
 
                                     DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
                                     DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
@@ -205,11 +205,11 @@ namespace FakturowniaService.task
 
                                     if (status == "1")
                                     {
-                                        log.LogInformation($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogInformation($"QAD_VIR_2025_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
                                     else
                                     {
-                                        log.LogError($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogError($"QAD_VIR_2025_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
 
                                     metricsService.Job2025_2ExecutionStatus = (int.Parse(status));
