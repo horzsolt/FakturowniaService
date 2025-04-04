@@ -26,6 +26,8 @@ namespace FakturowniaService
         private int job2025_2ExecutionStatus;
         private double execution2025_2Duration;
 
+        private int sqlClientCount;
+
         private readonly ILogger<MetricService> log;
         public double JobExecutionDuration
         {
@@ -167,6 +169,18 @@ namespace FakturowniaService
             }
         }
 
+        public int SQLClientCount
+        {
+            get
+            {
+                return sqlClientCount;
+            }
+            set
+            {
+                sqlClientCount = value;
+            }
+        }
+
         public MetricService(IMeterFactory meterFactory, ILogger<MetricService> logger, string serviceName, string serviceVersion)
         {
             JobExecutionStatus = 1;
@@ -176,10 +190,13 @@ namespace FakturowniaService
             JobExecutionDuration = 0;
 
             Job2025ExecutionStatus = 1;
+            Job2025_2ExecutionStatus = 1;
             Revenue2025RecordCount = 1;
             Revenue2025RecordCountDelta = 1;
             Revenue2025Sum = 0;
             Job2025ExecutionDuration = 0;
+
+            SQLClientCount = 0;
 
             log = logger;
             meter = meterFactory.Create(serviceName, serviceVersion);
@@ -239,7 +256,7 @@ namespace FakturowniaService
             meter.CreateObservableGauge(
                 name: "revenue2025_job_execution_status",
                 unit: "value",
-                observeValue: () => new Measurement<int>(JobExecutionStatus),
+                observeValue: () => new Measurement<int>(Job2025_2ExecutionStatus),
                 description:
                 "The result code of the latest MSSQL QAD-VIR refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
             );
@@ -270,6 +287,13 @@ namespace FakturowniaService
                 unit: "seconds",
                 observeValue: () => new Measurement<double>(Job2025ExecutionDuration),
                 description: "VIR Revenue2025 job duration."
+            );
+
+            meter.CreateObservableGauge(
+                name: "sql_client_count",
+                unit: "value",
+                observeValue: () => new Measurement<int>(SQLClientCount),
+                description: "Number of connected SQL clients."
             );
         }
 

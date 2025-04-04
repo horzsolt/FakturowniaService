@@ -9,4 +9,7 @@ namespace FakturowniaService.task
     [AttributeUsage(AttributeTargets.Class, Inherited = false)]
     public class JobStatusTaskAttribute : Attribute { }
 
+    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+    public class SQLClientTaskAttribute : Attribute { }
+
 }

@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics;
 using System.Collections.Generic;
+using FakturowniaService.util;
 
 namespace FakturowniaService.task
 {
@@ -86,11 +87,7 @@ namespace FakturowniaService.task
                                     DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
                                     DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
 
-                                    string secondsPart = duration.Substring(duration.Length - 2, 2);
-                                    string minutesPart = duration.Substring(0, duration.Length - 2);
-                                    int minutes = string.IsNullOrEmpty(minutesPart) ? 0 : int.Parse(minutesPart);
-                                    int seconds = int.Parse(secondsPart);
-                                    TimeSpan _duration = new TimeSpan(0, minutes, seconds);
+                                    TimeSpan _duration = Time.GetDurationFromString(duration);
                                     string durationFormatted = _duration.ToString(@"hh\:mm\:ss");
 
                                     string executedAt = new DateTime(

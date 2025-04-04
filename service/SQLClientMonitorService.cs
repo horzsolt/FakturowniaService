@@ -9,13 +9,13 @@ using System.Threading;
 
 namespace FakturowniaService
 {
-    public class JobStatusService : BackgroundService
+    public class SQLClientMonitorService : BackgroundService
     {
         private DateTime lastExecutionDate;
         private readonly ILogger<SQLClientMonitorService> log;
         private List<ETLTask> tasks;
 
-        public JobStatusService(ILogger<SQLClientMonitorService> logger, IEnumerable<ETLTask> taskList)
+        public SQLClientMonitorService(ILogger<SQLClientMonitorService> logger, IEnumerable<ETLTask> taskList)
         {
             lastExecutionDate = DateTime.MinValue;
             log = logger;
@@ -26,10 +26,10 @@ namespace FakturowniaService
             while (!stoppingToken.IsCancellationRequested)
             {
                 var now = DateTime.Now;
-                var nextRun = now.AddHours(1).Date.AddHours(now.AddHours(1).Hour).AddMinutes(10);
+                var nextRun = now.AddMinutes(1);
                 var delay = nextRun - now;
 
-                var readableDelay = $"{delay.Hours} hours, {delay.Minutes} minutes, and {delay.Seconds} seconds";
+                var readableDelay = $"{delay.Minutes} minutes and {delay.Seconds} seconds";
                 log.LogInformation($"Next task scheduled to run in: {readableDelay}");
 
                 try
@@ -48,7 +48,6 @@ namespace FakturowniaService
             }
         }
 
-
         public void StartAsConsole(string[] args)
         {
             try
@@ -66,7 +65,7 @@ namespace FakturowniaService
 
         private async Task DailyTask(CancellationToken stoppingToken)
         {
-            log.LogInformation($"It is {DateTime.Now:yyyy-MM-dd HH:mm:ss}. Start the JobStatus tasks as a DailyTask.");
+            log.LogInformation($"It is {DateTime.Now:yyyy-MM-dd HH:mm:ss}. Start the SQLClientMonitor tasks as a DailyTask.");
             foreach (var task in tasks)
             {
                 task.ExecuteTask();
