@@ -12,189 +12,6 @@ namespace FakturowniaService
 {
     public static class HTTP
     {
-        //TODO: Have only one method for downloading all data
-        public static List<string> DownloadAllClients(string apiUrlTemplate, ILogger<ETLTask> log)
-        {
-            string tempDirectory = Path.GetTempPath();
-            int maxRetries = 5;
-            int page = 1;
-            List<string> clientFiles = new List<string>();
-
-            log.LogInformation($"Start clients download.");
-
-            using (HttpClient client = new HttpClient())
-            {
-                client.Timeout = TimeSpan.FromMinutes(5);
-
-                while (true)
-                {
-                    string apiUrl = string.Format(apiUrlTemplate, page);
-                    string filePath = Path.Combine(tempDirectory, $"clients_page_{page}.json");
-
-                    log.LogDebug($"Downloading page {page} to {filePath}...");
-                    log.LogDebug($"API URL: {apiUrl}");
-
-                    bool success = false;
-                    for (int attempt = 0; attempt < maxRetries; attempt++)
-                    {
-                        try
-                        {
-                            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
-                            response.EnsureSuccessStatusCode();
-
-                            string content = response.Content.ReadAsStringAsync().Result;
-
-                            if (IsEmptyJson(content))
-                            {
-                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
-                                return clientFiles;
-                            }
-
-                            System.IO.File.WriteAllText(filePath, content, Encoding.UTF8);
-                            clientFiles.Add(filePath);
-
-                            success = true;
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
-                            Thread.Sleep(2000);
-                        }
-                    }
-
-                    if (!success)
-                    {
-                        throw new Exception($"Failed to download page {page} after {maxRetries} attempts.");
-                    }
-
-                    page++;
-                    Thread.Sleep(1000);
-                }
-            }
-        }
-        public static List<string> DownloadAllProducts(string apiUrlTemplate, ILogger<ETLTask> log)
-        {
-            string tempDirectory = Path.GetTempPath();
-            int maxRetries = 5;
-            int page = 1;
-            List<string> productFiles = new List<string>();
-
-            log.LogInformation($"Start products download.");
-
-            using (HttpClient client = new HttpClient())
-            {
-                client.Timeout = TimeSpan.FromMinutes(5);
-
-                while (true)
-                {
-                    string apiUrl = string.Format(apiUrlTemplate, page);
-                    string filePath = Path.Combine(tempDirectory, $"products_page_{page}.json");
-
-                    log.LogDebug($"Downloading page {page} to {filePath}...");
-                    log.LogDebug($"API URL: {apiUrl}");
-
-                    bool success = false;
-                    for (int attempt = 0; attempt < maxRetries; attempt++)
-                    {
-                        try
-                        {
-                            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
-                            response.EnsureSuccessStatusCode();
-
-                            string content = response.Content.ReadAsStringAsync().Result;
-
-                            if (IsEmptyJson(content))
-                            {
-                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
-                                return productFiles;
-                            }
-
-                            System.IO.File.WriteAllText(filePath, content, Encoding.UTF8);
-                            productFiles.Add(filePath);
-
-                            success = true;
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
-                            Thread.Sleep(2000);
-                        }
-                    }
-
-                    if (!success)
-                    {
-                        throw new Exception($"Failed to download page {page} after {maxRetries} attempts.");
-                    }
-
-                    page++;
-                    Thread.Sleep(1000);
-                }
-            }
-        }
-
-        public static List<string> DownloadAllPayments(string apiUrlTemplate, ILogger<ETLTask> log)
-        {
-            string tempDirectory = Path.GetTempPath();
-            int maxRetries = 5;
-            int page = 1;
-            List<string> paymentFiles = new List<string>();
-
-            log.LogInformation($"Start payments download.");
-
-            using (HttpClient client = new HttpClient())
-            {
-                client.Timeout = TimeSpan.FromMinutes(5);
-
-                while (true)
-                {
-                    string apiUrl = string.Format(apiUrlTemplate, page);
-                    string filePath = Path.Combine(tempDirectory, $"payments_page_{page}.json");
-
-                    log.LogDebug($"Downloading page {page} to {filePath}...");
-                    log.LogDebug($"API URL: {apiUrl}");
-
-                    bool success = false;
-                    for (int attempt = 0; attempt < maxRetries; attempt++)
-                    {
-                        try
-                        {
-                            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
-                            response.EnsureSuccessStatusCode();
-
-                            string content = response.Content.ReadAsStringAsync().Result;
-
-                            if (IsEmptyJson(content))
-                            {
-                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
-                                return paymentFiles;
-                            }
-
-                            System.IO.File.WriteAllText(filePath, content, Encoding.UTF8);
-                            paymentFiles.Add(filePath);
-
-                            success = true;
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
-                            Thread.Sleep(2000);
-                        }
-                    }
-
-                    if (!success)
-                    {
-                        throw new Exception($"Failed to download page {page} after {maxRetries} attempts.");
-                    }
-
-                    page++;
-                    Thread.Sleep(1000);
-                }
-            }
-        }
-
         public static List<string> DownloadAllInvoices(string apiUrlTemplate, string dateFrom, string dateTo, ILogger<ETLTask> log)
         {
             string tempDirectory = Path.GetTempPath();
@@ -256,6 +73,73 @@ namespace FakturowniaService
             }
         }
 
+        public static List<string> DownloadJSON(string apiUrlTemplate, ILogger<ETLTask> log, string entityName, bool singlePage = false)
+        {
+            string tempDirectory = Path.GetTempPath();
+            int maxRetries = 5;
+            int page = 1;
+            List<string> jsonFiles = new List<string>();
+
+            log.LogInformation($"Start {entityName} download.");
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.Timeout = TimeSpan.FromMinutes(5);
+
+                while (true)
+                {
+                    string apiUrl = string.Format(apiUrlTemplate, page);
+                    string filePath = Path.Combine(tempDirectory, $"{entityName}_page_{page}.json");
+
+                    log.LogDebug($"Downloading page {page} to {filePath}...");
+                    log.LogDebug($"API URL: {apiUrl}");
+
+                    bool success = false;
+                    for (int attempt = 0; attempt < maxRetries; attempt++)
+                    {
+                        try
+                        {
+                            HttpResponseMessage response = client.GetAsync(apiUrl).Result;
+                            response.EnsureSuccessStatusCode();
+
+                            string content = response.Content.ReadAsStringAsync().Result;
+
+                            if (IsEmptyJson(content))
+                            {
+                                log.LogInformation($"Page {page} is empty. Stopping iteration.");
+                                return jsonFiles;
+                            }
+
+                            System.IO.File.WriteAllText(filePath, content, Encoding.UTF8);
+                            jsonFiles.Add(filePath);
+
+                            success = true;
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for page {page}: {ex}");
+                            Thread.Sleep(2000);
+                        }
+                    }
+
+                    if (!success)
+                    {
+                        throw new Exception($"Failed to download page {page} after {maxRetries} attempts.");
+                    }
+
+                    if (singlePage)
+                    {
+                        log.LogInformation($"Single page download completed for {entityName}.");
+                        return jsonFiles;
+                    }
+
+                    page++;
+                    Thread.Sleep(1000);
+                }
+            }
+        }
+        
         private static bool IsEmptyJson(string json)
         {
             if (string.IsNullOrWhiteSpace(json))

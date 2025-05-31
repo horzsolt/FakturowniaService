@@ -10,6 +10,8 @@ namespace FakturowniaService
         private readonly Histogram<double> clientImportDuration;
         private readonly Histogram<double> invoiceImportDuration;
         private readonly Histogram<double> paymentImportDuration;
+        private readonly Histogram<double> warehouseDocumentImportDuration;
+        private readonly Histogram<double> warehouseImportDuration;
 
         private int jobExecutionStatus;
         private int revenueRecordCount;
@@ -217,6 +219,14 @@ namespace FakturowniaService
               name: "faktur_invoice_import_duration", unit: "seconds",
               description: "Invoice import duration in seconds.");
 
+            warehouseDocumentImportDuration = meter.CreateHistogram<double>(
+              name: "faktur_warehouse_document_duration", unit: "seconds",
+              description: "WarehouseDocument import duration in seconds.");
+
+            warehouseImportDuration = meter.CreateHistogram<double>(
+              name: "faktur_warehouse_duration", unit: "seconds",
+              description: "Warehouse import duration in seconds.");
+
             meter.CreateObservableGauge(
                 name: "revenue_job_execution_status",
                 unit: "value",
@@ -315,6 +325,16 @@ namespace FakturowniaService
         public void RecordPaymentImportDuration(double duration)
         {
             paymentImportDuration.Record(duration);
+        }
+
+        public void RecordWarehouseDocumentImportDuration(double duration)
+        {
+            warehouseDocumentImportDuration.Record(duration);
+        }
+
+        public void RecordWarehouseImportDuration(double duration)
+        {
+            warehouseImportDuration.Record(duration);
         }
     }
 }

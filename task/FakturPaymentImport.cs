@@ -22,7 +22,7 @@ namespace FakturowniaService
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                paymentFiles = HTTP.DownloadAllPayments(apiUrlTemplate, log);
+                paymentFiles = HTTP.DownloadJSON(apiUrlTemplate, log, "payment");
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +

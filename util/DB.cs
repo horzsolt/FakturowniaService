@@ -1,7 +1,11 @@
-﻿using FakturowniaService.task;
+﻿#nullable enable
+
+using FakturowniaService.entity;
+using FakturowniaService.task;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace FakturowniaService
@@ -41,6 +45,16 @@ namespace FakturowniaService
             }
         }
 
+        public static void InsertWarehouseImportLog(SqlConnection connection, SqlTransaction transaction, int executionTime)
+        {
+            using (SqlCommand command = new SqlCommand("[dbo].[sp_Insert_Fakturownia_Warehouse_Import_Log]", connection, transaction))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add(new SqlParameter("@ExecutionTime", SqlDbType.Int) { Value = executionTime });
+                command.ExecuteNonQuery();
+            }
+        }
+
         public static void InsertClientImportLog(SqlConnection connection, SqlTransaction transaction, int executionTime)
         {
             using (SqlCommand command = new SqlCommand("[dbo].[sp_Insert_Fakturownia_Client_Import_Log]", connection, transaction))
@@ -74,6 +88,16 @@ namespace FakturowniaService
         public static void InsertInvoiceImportLog(SqlConnection connection, SqlTransaction transaction, int executionTime)
         {
             using (SqlCommand command = new SqlCommand("[dbo].[sp_Insert_Fakturownia_Invoice_Import_Log]", connection, transaction))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add(new SqlParameter("@ExecutionTime", SqlDbType.Int) { Value = executionTime });
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public static void InsertWarehouseDocumentImportLog(SqlConnection connection, SqlTransaction transaction, int executionTime)
+        {
+            using (SqlCommand command = new SqlCommand("[dbo].[sp_Insert_Fakturownia_WarehouseDocument_Import_Log]", connection, transaction))
             {
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.Add(new SqlParameter("@ExecutionTime", SqlDbType.Int) { Value = executionTime });
@@ -581,10 +605,10 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@invoice_Id", item.Invoice_Id);
                 command.Parameters.AddWithValue("@name", (object)item.Name ?? DBNull.Value);
                 command.Parameters.AddWithValue("@description", (object)item.Description ?? DBNull.Value);
-                command.Parameters.AddWithValue("@price_net", (object)item.Price_Net ?? DBNull.Value);
-                command.Parameters.AddWithValue("@quantity", (object)item.Quantity ?? DBNull.Value);
-                command.Parameters.AddWithValue("@total_price_gross", (object)item.Total_Price_Gross ?? DBNull.Value);
-                command.Parameters.AddWithValue("@total_price_net", (object)item.Total_Price_Net ?? DBNull.Value);
+                command.Parameters.AddWithValue("@price_net", (object?)item.Price_Net ?? DBNull.Value);
+                command.Parameters.AddWithValue("@quantity", (object?)item.Quantity ?? DBNull.Value);
+                command.Parameters.AddWithValue("@total_price_gross", (object?)item.Total_Price_Gross ?? DBNull.Value);
+                command.Parameters.AddWithValue("@total_price_net", (object?)item.Total_Price_Net ?? DBNull.Value);
                 command.Parameters.AddWithValue("@account_id", item.Account_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@created_at", item.Created_At ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@updated_at", item.Updated_At ?? (object)DBNull.Value);
@@ -694,5 +718,78 @@ namespace FakturowniaService
                 command.ExecuteNonQuery();
             }
         }
+
+        public static void InsertWarehouseDocument(WarehouseDocument warehouseDocument, SqlConnection connection, SqlTransaction transaction, ILogger<ETLTask> log)
+        {
+            log.LogInformation($"Inserting warehouse document {warehouseDocument.id} into the database.");
+
+            var query = @"
+                INSERT INTO Fakturownia_WarehouseDocument (id, kind, supplier, recipient, description, issue_date, number, warehouse_id, updater_id, creator_id, deleted,
+                created_at, updated_at, pattern, pattern_nr, pattern_nr_m, pattern_nr_d, issue_year, external_id, exchange_rate, currency, oid, client_id, expected_delivery_date,
+                recipient_ref, warehouse_document_id, seller_person, buyer_person, gave_person, department_id, lang, department_name, department_tax_no_kind, department_tax_no,
+                department_bank_account, department_bank, department_street, department_post_code, department_city, department_country, department_email, department_www, department_fax,
+                department_phone, client_company, client_title, client_first_name, client_last_name, client_name, client_tax_no_kind, client_tax_no, client_street, client_post_code,
+                client_city, client_bank_account, client_bank, client_country, client_note, client_email, client_phone, client_delivery_address, client_use_delivery_address, exchange_currency,
+                exchange_kind, exchange_currency_rate, exchange_date, exchange_note, price_net, price_gross, price_tax, calculating_strategy_position, calculating_strategy_sum,
+                calculating_strategy_invoice_form_price_kind, transaction_date, template_id, purchase_price_net, purchase_price_gross, purchase_price_tax, from_form_with_actions,
+                from_api, origin, additional_info, additional_info_desc, status, quantity, exchange_rate_den, exchange_currency_rate_den,
+                fiscal_currency, fiscal_exchange_rate, fiscal_exchange_rate_den, search_data)
+                VALUES (@id, @kind, @supplier, @recipient, @description, @issue_date, @number, @warehouse_id, @updater_id, @creator_id, @deleted,
+                @created_at, @updated_at, @pattern, @pattern_nr, @pattern_nr_m, @pattern_nr_d, @issue_year, @external_id, @exchange_rate, @currency, @oid, @client_id, @expected_delivery_date,
+                @recipient_ref, @warehouse_document_id, @seller_person, @buyer_person, @gave_person, @department_id, @lang, @department_name, @department_tax_no_kind, @department_tax_no,
+                @department_bank_account, @department_bank, @department_street, @department_post_code, @department_city, @department_country, @department_email, @department_www, @department_fax,
+                @department_phone, @client_company, @client_title, @client_first_name, @client_last_name, @client_name, @client_tax_no_kind, @client_tax_no, @client_street, @client_post_code,
+                @client_city, @client_bank_account, @client_bank, @client_country, @client_note, @client_email, @client_phone, @client_delivery_address, @client_use_delivery_address, @exchange_currency,
+                @exchange_kind, @exchange_currency_rate, @exchange_date, @exchange_note, @price_net, @price_gross, @price_tax, @calculating_strategy_position, @calculating_strategy_sum,
+                @calculating_strategy_invoice_form_price_kind, @transaction_date, @template_id, @purchase_price_net, @purchase_price_gross, @purchase_price_tax, @from_form_with_actions,
+                @from_api, @origin, @additional_info, @additional_info_desc, @status, @quantity, @exchange_rate_den, @exchange_currency_rate_den,
+                @fiscal_currency, @fiscal_exchange_rate, @fiscal_exchange_rate_den, @search_data);
+            ";
+
+            using (var command = new SqlCommand(query, connection, transaction))
+            {
+                var props = typeof(WarehouseDocument).GetProperties();
+                foreach (var prop in props)
+                {
+                    var value = prop.GetValue(warehouseDocument) ?? DBNull.Value;
+                    command.Parameters.AddWithValue("@" + prop.Name, value);
+                }
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public static void InsertWarehouse(Warehouse warehouse, SqlConnection connection, SqlTransaction transaction, ILogger<ETLTask> log)
+        {
+            log.LogInformation($"Inserting warehouse {warehouse.id} into the database.");
+
+            using (SqlCommand cmd = new SqlCommand(@"
+                INSERT INTO Fakturownia_Warehouse (
+                    id, name, description, account_id, updater_id, creator_id,
+                    kind, created_at, updated_at, deleted, active,
+                    use_product_warehouse_cache, siteor_shop_id)
+                VALUES (
+                    @id, @name, @description, @account_id, @updater_id, @creator_id,
+                    @kind, @created_at, @updated_at, @deleted, @active,
+                    @use_product_warehouse_cache, @siteor_shop_id);", connection, transaction))
+            {
+                cmd.Parameters.Add("@id", SqlDbType.Int).Value = warehouse.id;
+                cmd.Parameters.Add("@name", SqlDbType.NVarChar, 255).Value = warehouse.name ?? (object)DBNull.Value;
+                cmd.Parameters.Add("@description", SqlDbType.NVarChar).Value = string.IsNullOrEmpty(warehouse.description) ? (object)DBNull.Value : warehouse.description;
+                cmd.Parameters.Add("@account_id", SqlDbType.Int).Value = warehouse.account_id;
+                cmd.Parameters.Add("@updater_id", SqlDbType.Int).Value = (object?)warehouse.updater_id ?? DBNull.Value;
+                cmd.Parameters.Add("@creator_id", SqlDbType.Int).Value = (object?)warehouse.creator_id ?? DBNull.Value;
+                cmd.Parameters.Add("@kind", SqlDbType.NVarChar, 50).Value = warehouse.kind ?? string.Empty;
+                cmd.Parameters.Add("@created_at", SqlDbType.DateTimeOffset).Value = warehouse.created_at;
+                cmd.Parameters.Add("@updated_at", SqlDbType.DateTimeOffset).Value = warehouse.updated_at;
+                cmd.Parameters.Add("@deleted", SqlDbType.VarChar, 5).Value = warehouse.deleted.ToString().ToLower();
+                cmd.Parameters.Add("@active", SqlDbType.VarChar, 5).Value = warehouse.active.ToString().ToLower();
+                cmd.Parameters.Add("@use_product_warehouse_cache", SqlDbType.VarChar, 5).Value = warehouse.use_product_warehouse_cache.ToString().ToLower();
+                cmd.Parameters.Add("@siteor_shop_id", SqlDbType.Int).Value = (object?)warehouse.siteor_shop_id ?? DBNull.Value;
+
+                cmd.ExecuteNonQuery();
+            }
+        }
     }
 }
+

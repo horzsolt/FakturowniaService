@@ -81,26 +81,9 @@ namespace FakturExport
 
             var assembly = Assembly.GetExecutingAssembly();
 
-
-            /*var fakturTasks = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && typeof(ETLTask).IsAssignableFrom(t) &&
-                            t.GetCustomAttribute<FakturTaskAttribute>() != null);
-            foreach (var task in fakturTasks)
-            {
-                appBuilder.Services.AddTransient(typeof(ETLTask), task);
-            }
-
-            var jobStatusTasks = assembly.GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract && typeof(ETLTask).IsAssignableFrom(t) &&
-                            t.GetCustomAttribute<JobStatusTaskAttribute>() != null);
-            foreach (var task in jobStatusTasks)
-            {
-                appBuilder.Services.AddTransient(typeof(ETLTask), task);
-            }*/
-
             var fakturTasks = assembly.GetTypes()
                 .Where(t => t.IsClass && !t.IsAbstract && typeof(ETLTask).IsAssignableFrom(t));
-            foreach (var task in fakturTasks)
+            foreach (var task in fakturTasks.AsEnumerable().Reverse())
             {
                 appBuilder.Services.AddTransient(typeof(ETLTask), task);
             }
@@ -157,13 +140,14 @@ namespace FakturExport
                         using (logger.BeginScope("Console mode"))
                         {
                             logger.LogInformation("Starting the service in interactive mode.");
-                            /*var fakturService = serviceProvider.GetRequiredService<FakturService>();
+                            var fakturService = serviceProvider.GetRequiredService<FakturService>();
                             fakturService.StartAsConsole(null);
-                            */
+                            
                             
 
-                            var jobStatusService = serviceProvider.GetRequiredService<SQLClientMonitorService>();
+                            /*var jobStatusService = serviceProvider.GetRequiredService<SQLClientMonitorService>();
                             jobStatusService.StartAsConsole(null);
+                            */
                             
 
                         }

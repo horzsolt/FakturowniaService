@@ -1,4 +1,4 @@
-﻿using FakturowniaService.task;
+﻿using FakturowniaService.entity;
 using FakturowniaService.util;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -7,23 +7,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace FakturowniaService
+namespace FakturowniaService.task
 {
-    [FakturTask]
-    class FakturProductImport(MetricService metricsService, ILogger<FakturProductImport> log) : ETLTask
-    {
-        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PRODUCT_API_URL_TEMPLATE");
 
+    [FakturTask]
+    class FakturWarehouseImport(MetricService metricsService, ILogger<FakturWarehouseImport> log) : ETLTask
+    {
+        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_WAREHOUSES_API_URL_TEMPLATE");
         public void ExecuteTask()
         {
-            List<string> productFiles = null;
+            List<string> warehouseFiles = null;
 
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                productFiles = HTTP.DownloadJSON(apiUrlTemplate, log, "product");
+                warehouseFiles = HTTP.DownloadJSON(apiUrlTemplate, log, "warehouses", true);
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
@@ -39,9 +39,9 @@ namespace FakturowniaService
                     {
                         try
                         {
-                            DB.DeleteAllRows("Fakturownia_Product", connection, transaction);
+                            DB.DeleteAllRows("Fakturownia_Warehouse", connection, transaction);
 
-                            foreach (string file in productFiles)
+                            foreach (string file in warehouseFiles)
                             {
                                 log.LogInformation($"Processing file: {file}");
 
@@ -51,19 +51,19 @@ namespace FakturowniaService
                                 };
 
                                 var json = System.IO.File.ReadAllText(file);
-                                var products = JsonConvert.DeserializeObject<List<Product>>(json, settings);
+                                var warehouses = JsonConvert.DeserializeObject<List<Warehouse>>(json, settings);
 
-                                foreach (var product in products)
+                                foreach (var warehouse in warehouses)
                                 {
-                                    DB.InsertProduct(product, connection, transaction, log);
+                                    DB.InsertWarehouse(warehouse, connection, transaction, log);
                                 }
                             }
 
-                            DB.InsertProductImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
+                            DB.InsertWarehouseImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
                             transaction.Commit();
 
                             stopwatch.Stop();
-                            metricsService.RecordProductImportDuration(stopwatch.Elapsed.TotalSeconds);
+                            metricsService.RecordWarehouseImportDuration(stopwatch.Elapsed.TotalSeconds);
                         }
                         catch (Exception ex)
                         {
@@ -72,7 +72,7 @@ namespace FakturowniaService
                         }
                     }
                 }
-                
+
                 log.LogInformation($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
             }
             catch (Exception ex)
@@ -81,12 +81,14 @@ namespace FakturowniaService
             }
             finally
             {
-                if (productFiles != null && productFiles.Count > 0)
+                if (warehouseFiles != null && warehouseFiles.Count > 0)
                 {
                     log.LogInformation("Cleaning up...");
-                    File.DeleteFiles(productFiles, log);
+                    File.DeleteFiles(warehouseFiles, log);
                 }
             }
         }
     }
 }
+
+

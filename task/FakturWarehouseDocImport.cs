@@ -10,20 +10,20 @@ using System.Diagnostics;
 namespace FakturowniaService
 {
     [FakturTask]
-    class FakturProductImport(MetricService metricsService, ILogger<FakturProductImport> log) : ETLTask
+    class FakturWarehouseDocImport(MetricService metricsService, ILogger<FakturWarehouseDocImport> log) : ETLTask
     {
-        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_PRODUCT_API_URL_TEMPLATE");
+        private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_WAREHOUSEDOC_API_URL_TEMPLATE");
 
         public void ExecuteTask()
         {
-            List<string> productFiles = null;
+            List<string> warehouseDocFiles = null;
 
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                productFiles = HTTP.DownloadJSON(apiUrlTemplate, log, "product");
+                warehouseDocFiles = HTTP.DownloadJSON(apiUrlTemplate, log, "warehousedoc");
 
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +
                           $"Database={Environment.GetEnvironmentVariable("VIR_SQL_DATABASE")};" +
@@ -39,9 +39,9 @@ namespace FakturowniaService
                     {
                         try
                         {
-                            DB.DeleteAllRows("Fakturownia_Product", connection, transaction);
+                            DB.DeleteAllRows("Fakturownia_WarehouseDocument", connection, transaction);
 
-                            foreach (string file in productFiles)
+                            foreach (string file in warehouseDocFiles)
                             {
                                 log.LogInformation($"Processing file: {file}");
 
@@ -51,19 +51,19 @@ namespace FakturowniaService
                                 };
 
                                 var json = System.IO.File.ReadAllText(file);
-                                var products = JsonConvert.DeserializeObject<List<Product>>(json, settings);
+                                var warehouseDocs = JsonConvert.DeserializeObject<List<WarehouseDocument>>(json, settings);
 
-                                foreach (var product in products)
+                                foreach (var warehouseDoc in warehouseDocs)
                                 {
-                                    DB.InsertProduct(product, connection, transaction, log);
+                                    DB.InsertWarehouseDocument(warehouseDoc, connection, transaction, log);
                                 }
                             }
 
-                            DB.InsertProductImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
+                            DB.InsertWarehouseDocumentImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
                             transaction.Commit();
 
                             stopwatch.Stop();
-                            metricsService.RecordProductImportDuration(stopwatch.Elapsed.TotalSeconds);
+                            metricsService.RecordWarehouseDocumentImportDuration(stopwatch.Elapsed.TotalSeconds);
                         }
                         catch (Exception ex)
                         {
@@ -81,10 +81,10 @@ namespace FakturowniaService
             }
             finally
             {
-                if (productFiles != null && productFiles.Count > 0)
+                if (warehouseDocFiles != null && warehouseDocFiles.Count > 0)
                 {
                     log.LogInformation("Cleaning up...");
-                    File.DeleteFiles(productFiles, log);
+                    File.DeleteFiles(warehouseDocFiles, log);
                 }
             }
         }
