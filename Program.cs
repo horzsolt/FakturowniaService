@@ -143,12 +143,20 @@ namespace FakturExport
                             var fakturService = serviceProvider.GetRequiredService<FakturService>();
                             fakturService.StartAsConsole(null);
                             
-                            
+
+                            /*var etlTasks = serviceProvider.GetServices<ETLTask>();
+                            var fakturTask = etlTasks.FirstOrDefault(t => t.GetType() == typeof(FakturowniaService.FakturInvoiceImport));
+
+                            if (fakturTask != null)
+                            {
+                                fakturTask.ExecuteTask(); // Run the task
+                            }*/
+
 
                             /*var jobStatusService = serviceProvider.GetRequiredService<SQLClientMonitorService>();
                             jobStatusService.StartAsConsole(null);
                             */
-                            
+
 
                         }
                         break;

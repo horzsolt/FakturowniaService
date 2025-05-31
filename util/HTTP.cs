@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -71,6 +72,85 @@ namespace FakturowniaService
                     Thread.Sleep(1000);
                 }
             }
+        }
+
+        private static string MakeValidFilename(string invoicenumber)
+        {
+            var invalidChars = Path.GetInvalidFileNameChars();
+            var sanitized = new string(invoicenumber
+                .Select(ch => invalidChars.Contains(ch) ? '_' : ch)
+                .ToArray());
+
+            return sanitized;
+        }
+
+        public static bool DownloadPDF(string apiUrlTemplate, ILogger<ETLTask> log, string invoiceId, string invoicenumber)
+        {
+            string tempDirectory = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_DL_PATH");
+            string outputFileName = MakeValidFilename(invoicenumber);
+            string filePath = Path.Combine(tempDirectory, $"{outputFileName}.pdf");
+            int maxRetries = 5;
+
+            if (System.IO.File.Exists(filePath))
+            {
+                log.LogInformation($"Invoice PDF file {filePath} already exists. Skipping download.");
+                return true;
+            }
+
+            log.LogInformation($"Start invoice pdf download {outputFileName}.");
+
+            bool success = false;
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.Timeout = TimeSpan.FromMinutes(5);
+
+                while (true)
+                {
+                    string apiUrl = string.Format(apiUrlTemplate, invoiceId);
+
+                    log.LogDebug($"API URL: {apiUrl}");
+
+                    for (int attempt = 0; attempt < maxRetries; attempt++)
+                    {
+                        try
+                        {
+                            HttpResponseMessage response = client.GetAsync(apiUrl).GetAwaiter().GetResult();
+                            if (response.IsSuccessStatusCode) {
+
+                                string contentType = response.Content.Headers.ContentType?.MediaType;
+                                byte[] pdfBytes = response.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
+
+                                if (contentType == "application/pdf" && pdfBytes.Length > 0)
+                                {
+                                    System.IO.File.WriteAllBytes(filePath, pdfBytes);
+                                    log.LogInformation($"PDF downloaded successfully to: {filePath}");
+                                    success = true;
+                                    break;
+                                }
+                                else
+                                {
+                                    log.LogError("Download failed: Content is not a valid PDF or is empty.");
+                                    break;
+                                }
+                            }       
+                        }
+                        catch (Exception ex)
+                        {
+                            log.LogError($"Error: {ex}, retry: {attempt + 1} failed for invoice {invoicenumber}: {ex}");
+                            Thread.Sleep(2000);
+                        }
+                    }
+
+                    if (success)
+                    {
+                        log.LogInformation($"PDF download completed for invoice {invoicenumber}.");
+                        break;
+                    }
+                }
+            }
+
+            return success;
         }
 
         public static List<string> DownloadJSON(string apiUrlTemplate, ILogger<ETLTask> log, string entityName, bool singlePage = false)

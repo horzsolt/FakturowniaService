@@ -13,6 +13,7 @@ namespace FakturowniaService
     class FakturInvoiceImport(MetricService metricsService, ILogger<FakturInvoiceImport> log) : ETLTask
     {
         private readonly string apiUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_API_URL_TEMPLATE");
+        private readonly string pdfUrlTemplate = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_PDF_URL_TEMPLATE");
 
         public void ExecuteTask()
         {
@@ -66,6 +67,7 @@ namespace FakturowniaService
 
                                 foreach (var invoice in invoices)
                                 {
+                                    HTTP.DownloadPDF(pdfUrlTemplate, log, invoice.Id.ToString(), invoice.Number);
                                     DB.InsertInvoiceHeader(invoice, connection, transaction, log);
 
                                     foreach (var item in invoice.Positions)
