@@ -9,13 +9,13 @@ using System.Threading;
 
 namespace FakturowniaService
 {
-    public class SQLClientMonitorService : BackgroundService
+    public class HostMonitorService : BackgroundService
     {
         private DateTime lastExecutionDate;
-        private readonly ILogger<SQLClientMonitorService> log;
+        private readonly ILogger<HostMonitorService> log;
         private List<ETLTask> tasks;
 
-        public SQLClientMonitorService(ILogger<SQLClientMonitorService> logger, IEnumerable<ETLTask> taskList)
+        public HostMonitorService(ILogger<HostMonitorService> logger, IEnumerable<ETLTask> taskList)
         {
             lastExecutionDate = DateTime.MinValue;
             log = logger;

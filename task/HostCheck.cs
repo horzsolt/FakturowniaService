@@ -2,15 +2,56 @@
 using System;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.IO;
+using System.Management;
 
 namespace FakturowniaService.task
 {
-    [SQLClientTask]
-    class ClientConnectionCheck(MetricService metricsService, ILogger<ClientConnectionCheck> log) : ETLTask
+    [HostCheckTask]
+    class HostCheck(MetricService metricsService, ILogger<HostCheck> log) : ETLTask
     {
         public void ExecuteTask()
         {
+            CheckSQLClients(metricsService, log);
+            CheckDiskSpace(metricsService, log);
+        }
 
+        private static void CheckDiskSpace(MetricService metricsService, ILogger<HostCheck> log)
+        {
+            try
+            {
+                DriveInfo cDrive = new DriveInfo("C");
+                long freeSpaceBytes = cDrive.AvailableFreeSpace;
+                long totalSpaceBytes = cDrive.TotalSize;
+
+                log.LogDebug($"C: drive - Free space: {freeSpaceBytes / (1024 * 1024)} MB / Total: {totalSpaceBytes / (1024 * 1024)} MB");
+                metricsService.Diskfreebytes = freeSpaceBytes / (1024 * 1024);
+                log.LogDebug($"Available space metric {freeSpaceBytes / (1024 * 1024)}");
+
+                long totalAllocatedSizeMB = 0;
+                long totalCurrentUsageMB = 0;
+
+                using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PageFileUsage"))
+                {
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        totalAllocatedSizeMB += Convert.ToInt64(obj["AllocatedBaseSize"]);
+                        totalCurrentUsageMB += Convert.ToInt64(obj["CurrentUsage"]);
+                    }
+                }
+
+                log.LogDebug($"Total pagefile size: {totalAllocatedSizeMB} MB");
+                log.LogDebug($"Total pagefile current usage: {totalCurrentUsageMB} MB");
+
+                metricsService.Pagefilesizebytes = totalAllocatedSizeMB;
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"Error: {ex}");
+            }
+        }
+        private static void CheckSQLClients(MetricService metricsService, ILogger<HostCheck> log)
+        {
             try
             {
                 string connectionString = $"Server={Environment.GetEnvironmentVariable("VIR_SQL_SERVER_NAME")};" +

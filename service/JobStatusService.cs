@@ -12,10 +12,10 @@ namespace FakturowniaService
     public class JobStatusService : BackgroundService
     {
         private DateTime lastExecutionDate;
-        private readonly ILogger<SQLClientMonitorService> log;
+        private readonly ILogger<HostMonitorService> log;
         private List<ETLTask> tasks;
 
-        public JobStatusService(ILogger<SQLClientMonitorService> logger, IEnumerable<ETLTask> taskList)
+        public JobStatusService(ILogger<HostMonitorService> logger, IEnumerable<ETLTask> taskList)
         {
             lastExecutionDate = DateTime.MinValue;
             log = logger;

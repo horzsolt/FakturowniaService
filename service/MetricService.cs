@@ -29,6 +29,8 @@ namespace FakturowniaService
         private double execution2025_2Duration;
 
         private int sqlClientCount;
+        private long diskfreebytes;
+        private long pagefilesizebytes;
 
         private readonly ILogger<MetricService> log;
         public double JobExecutionDuration
@@ -183,6 +185,30 @@ namespace FakturowniaService
             }
         }
 
+        public long Diskfreebytes
+        {
+            get
+            {
+                return diskfreebytes;
+            }
+            set
+            {
+                diskfreebytes = value;
+            }
+        }
+
+        public long Pagefilesizebytes
+        {
+            get
+            {
+                return pagefilesizebytes;
+            }
+            set
+            {
+                pagefilesizebytes = value;
+            }
+        }
+
         public MetricService(IMeterFactory meterFactory, ILogger<MetricService> logger, string serviceName, string serviceVersion)
         {
             JobExecutionStatus = 1;
@@ -199,6 +225,8 @@ namespace FakturowniaService
             Job2025ExecutionDuration = 0;
 
             SQLClientCount = 0;
+            pagefilesizebytes = 0;
+            diskfreebytes = 0;
 
             log = logger;
             meter = meterFactory.Create(serviceName, serviceVersion);
@@ -304,6 +332,20 @@ namespace FakturowniaService
                 unit: "value",
                 observeValue: () => new Measurement<int>(SQLClientCount),
                 description: "Number of connected SQL clients."
+            );
+
+            meter.CreateObservableGauge(
+                name: "free_disk_space",
+                unit: "megabyte",
+                observeValue: () => new Measurement<long>(Diskfreebytes),
+                description: "Free MB on the C disk."
+            );
+
+            meter.CreateObservableGauge(
+                name: "pagefile_size",
+                unit: "megabyte",
+                observeValue: () => new Measurement<long>(Pagefilesizebytes),
+                description: "Pagefile size in MB."
             );
         }
 

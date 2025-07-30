@@ -21,7 +21,7 @@ namespace FakturExport
     internal class Program
     {
         private static readonly String serviceName = "VIR Faktur ETL service";
-        private static readonly String serviceVersion = "1.0.0";
+        private static readonly String serviceVersion = "1.0.1";
 
         private static void ConfigureServices(HostApplicationBuilder appBuilder)
         {
@@ -93,15 +93,15 @@ namespace FakturExport
                     .Where(t => t.GetType().GetCustomAttribute<FakturTaskAttribute>() != null)));
 
             appBuilder.Services.AddHostedService(sp =>
-                new JobStatusService(sp.GetRequiredService<ILogger<SQLClientMonitorService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                new JobStatusService(sp.GetRequiredService<ILogger<HostMonitorService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
                     .Where(t => t.GetType().GetCustomAttribute<JobStatusTaskAttribute>() != null)));
 
             appBuilder.Services.AddHostedService(sp =>
-                new SQLClientMonitorService(sp.GetRequiredService<ILogger<SQLClientMonitorService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
-                    .Where(t => t.GetType().GetCustomAttribute<SQLClientTaskAttribute>() != null)));
+                new HostMonitorService(sp.GetRequiredService<ILogger<HostMonitorService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                    .Where(t => t.GetType().GetCustomAttribute<HostCheckTaskAttribute>() != null)));
 
             appBuilder.Services.AddSingleton(sp =>
-                new JobStatusService(sp.GetRequiredService<ILogger<SQLClientMonitorService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                new JobStatusService(sp.GetRequiredService<ILogger<HostMonitorService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
                     .Where(t => t.GetType().GetCustomAttribute<JobStatusTaskAttribute>() != null)));
 
             appBuilder.Services.AddSingleton(sp =>
