@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace FakturowniaService.task
 {
@@ -178,19 +179,28 @@ namespace FakturowniaService.task
                                     string duration = row["RunDuration"] is DBNull ? String.Empty : row.Field<int>("RunDuration").ToString();
                                     string message = row["Message"] is DBNull ? String.Empty : row.Field<string>("Message");
 
-                                    if (executionTime.Length != 6) executionTime = "0" + executionTime;
+                                    // Normalize time to HHmmss
+                                    executionTime = executionTime.PadLeft(6, '0');
 
-                                    log.LogDebug($"Last job_2 execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
+                                    log.LogDebug(
+                                        $"Last job_2 execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
 
-                                    DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
-                                    DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
+                                    // Parse combined datetime
+                                    DateTime executionDateTime = DateTime.ParseExact(
+                                        executionDate + executionTime,
+                                        "yyyyMMddHHmmss",
+                                        CultureInfo.InvariantCulture);
 
-                                    TimeSpan _duration = Time.GetDurationFromString(duration);
-                                    string durationFormatted = _duration.ToString(@"hh\:mm\:ss");
+                                    // Duration
+                                    TimeSpan jobDuration = Time.GetDurationFromString(duration);
+                                    string durationFormatted = jobDuration.ToString(@"hh\:mm\:ss");
 
-                                    string executedAt = new DateTime(
-                                        date.Year, date.Month, date.Day,
-                                        time.Hour, time.Minute, time.Second).ToString("yyyy-MM-dd HH:mm:ss");
+                                    DateTime executedAtDateTime = DateTime.ParseExact(
+                                        executionDate + executionTime,
+                                        "yyyyMMddHHmmss",
+                                        CultureInfo.InvariantCulture);
+
+                                    string executedAt = executedAtDateTime.ToString("yyyy-MM-dd HH:mm:ss");
 
                                     if (status == "1")
                                     {
@@ -202,7 +212,7 @@ namespace FakturowniaService.task
                                     }
 
                                     metricsService.Job2025_2ExecutionStatus = (int.Parse(status));
-                                    metricsService.Job2025_2ExecutionDuration = _duration.TotalSeconds;
+                                    metricsService.Job2025_2ExecutionDuration = jobDuration.TotalSeconds;
                                 }
                             }
                             catch (Exception ex)

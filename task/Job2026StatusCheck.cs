@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 
+//TODO: parameterize the query and move it to its own method
 namespace FakturowniaService.task
 {
     [JobStatusTask]

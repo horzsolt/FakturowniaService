@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.Metrics;
 
+//TODO Split this class into three different: revenue2026, revenue2026, the rest
 namespace FakturowniaService
 {
     public class MetricService
