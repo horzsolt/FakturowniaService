@@ -1,8 +1,6 @@
 ﻿using FakturowniaService.util;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry.Trace;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,7 +9,7 @@ using System.Diagnostics;
 namespace FakturowniaService.task
 {
     [JobStatusTask]
-    class Job2025StatusCheck(MetricService metricsService, ILogger<Job2025StatusCheck> log) : ETLTask
+    class Job2026StatusCheck(MetricService metricsService, ILogger<Job2026StatusCheck> log) : ETLTask
     {
         public void ExecuteTask()
         {
@@ -46,7 +44,7 @@ namespace FakturowniaService.task
                             msdb.dbo.sysjobhistory AS h
                             ON j.job_id = h.job_id
                         WHERE 
-                            j.name LIKE 'QAD_VIR_2025_frissites%'
+                            j.name = 'QAD_VIR_2026_frissites'
                             AND h.instance_id = (
                                 SELECT MAX(instance_id) 
                                 FROM msdb.dbo.sysjobhistory 
@@ -66,7 +64,7 @@ namespace FakturowniaService.task
 
                             if (dataTable.Rows.Count == 0)
                             {
-                                metricsService.Job2025ExecutionStatus = 0;
+                                metricsService.Job2026ExecutionStatus = 0;
                                 log.LogError("No records found.");
                                 return;
                             }
@@ -101,11 +99,11 @@ namespace FakturowniaService.task
 
                                     if (status == "1")
                                     {
-                                        log.LogInformation($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogInformation($"QAD_VIR_2026_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
                                     else
                                     {
-                                        log.LogError($"QAD_VIR_2025_frissites failed at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogError($"QAD_VIR_2026_frissites failed at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
 
                                     if (_status == 1)
@@ -114,12 +112,12 @@ namespace FakturowniaService.task
                                     }
                                 }
 
-                                metricsService.Job2025ExecutionStatus = _status;
-                                metricsService.Job2025ExecutionDuration = _duration.TotalSeconds;
+                                metricsService.Job2026ExecutionStatus = _status;
+                                metricsService.Job2026ExecutionDuration = _duration.TotalSeconds;
                             }
                             catch (Exception ex)
                             {
-                                metricsService.Job2025ExecutionStatus = 0;
+                                metricsService.Job2026ExecutionStatus = 0;
                                 log.LogError($"Error: {ex}");
                             }
                         }
@@ -142,7 +140,7 @@ namespace FakturowniaService.task
                             msdb.dbo.sysjobhistory AS h
                             ON j.job_id = h.job_id
                         WHERE 
-                            j.name = 'QAD_VIR_2025_frissites_2'
+                            j.name = 'QAD_VIR_2026_frissites_2'
                             AND h.instance_id = (
                                 SELECT MAX(instance_id) 
                                 FROM msdb.dbo.sysjobhistory 
@@ -162,7 +160,7 @@ namespace FakturowniaService.task
 
                             if (dataTable.Rows.Count == 0)
                             {
-                                metricsService.Job2025_2ExecutionStatus = 0;
+                                metricsService.Job2026_2ExecutionStatus = 0;
                                 log.LogError("No records found.");
                                 return;
                             }
@@ -194,20 +192,108 @@ namespace FakturowniaService.task
 
                                     if (status == "1")
                                     {
-                                        log.LogInformation($"QAD_VIR_2025_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogInformation($"QAD_VIR_2026_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
                                     else
                                     {
-                                        log.LogError($"QAD_VIR_2025_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogError($"QAD_VIR_2026_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
 
-                                    metricsService.Job2025_2ExecutionStatus = (int.Parse(status));
-                                    metricsService.Job2025_2ExecutionDuration = _duration.TotalSeconds;
+                                    metricsService.Job2026_2ExecutionStatus = (int.Parse(status));
+                                    metricsService.Job2026_2ExecutionDuration = _duration.TotalSeconds;
                                 }
                             }
                             catch (Exception ex)
                             {
-                                metricsService.Job2025_2ExecutionStatus = 0;
+                                metricsService.Job2026_2ExecutionStatus = 0;
+                                log.LogError($"Error: {ex}");
+                            }
+                        }
+                    }
+
+                    var query3 = @"SELECT 
+                            j.name AS JobName,
+                            h.step_id AS StepID,
+                            h.step_name AS StepName,
+                            h.run_status AS RunStatus, -- 0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled
+                            h.run_date AS RunDate,
+                            h.run_time AS RunTime,
+                            h.run_duration AS RunDuration,
+                            h.sql_message_id AS SqlMessageID,
+                            h.sql_severity AS SqlSeverity,
+                            h.message AS Message
+                        FROM 
+                            msdb.dbo.sysjobs AS j
+                        INNER JOIN 
+                            msdb.dbo.sysjobhistory AS h
+                            ON j.job_id = h.job_id
+                        WHERE 
+                            j.name = 'QAD_VIR_2026_frissites_3'
+                            AND h.instance_id = (
+                                SELECT MAX(instance_id) 
+                                FROM msdb.dbo.sysjobhistory 
+                                WHERE job_id = j.job_id
+                            )
+                        ORDER BY 
+                            h.step_id;";
+
+                    using (SqlCommand command = new SqlCommand(query3, connection))
+                    {
+                        command.CommandTimeout = 500;
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            DataTable dataTable = new DataTable();
+                            dataTable.Load(reader);
+
+                            if (dataTable.Rows.Count == 0)
+                            {
+                                metricsService.Job2026_3ExecutionStatus = 0;
+                                log.LogError("No records found.");
+                                return;
+                            }
+
+                            try
+                            {
+
+                                foreach (DataRow row in dataTable.Rows)
+                                {
+                                    string status = row["RunStatus"] is DBNull ? "-1" : row.Field<int>("RunStatus").ToString();
+                                    string executionDate = row["RunDate"] is DBNull ? String.Empty : row.Field<int>("RunDate").ToString();
+                                    string executionTime = row["RunTime"] is DBNull ? String.Empty : row.Field<int>("RunTime").ToString();
+                                    string duration = row["RunDuration"] is DBNull ? String.Empty : row.Field<int>("RunDuration").ToString();
+                                    string message = row["Message"] is DBNull ? String.Empty : row.Field<string>("Message");
+
+                                    if (executionTime.Length != 6) executionTime = "0" + executionTime;
+
+                                    log.LogDebug($"Last job_3 execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
+
+                                    DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
+                                    DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
+
+                                    TimeSpan _duration = Time.GetDurationFromString(duration);
+                                    string durationFormatted = _duration.ToString(@"hh\:mm\:ss");
+
+                                    string executedAt = new DateTime(
+                                        date.Year, date.Month, date.Day,
+                                        time.Hour, time.Minute, time.Second).ToString("yyyy-MM-dd HH:mm:ss");
+
+                                    if (status == "1")
+                                    {
+                                        log.LogInformation($"QAD_VIR_2026_3_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                    }
+                                    else
+                                    {
+                                        log.LogError($"QAD_VIR_2026_3_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                    }
+
+                                    metricsService.Job2026_3ExecutionStatus = (int.Parse(status));
+                                    metricsService.Job2026_3ExecutionDuration = _duration.TotalSeconds;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                metricsService.Job2026_3ExecutionStatus = 0;
                                 log.LogError($"Error: {ex}");
                             }
                         }
@@ -215,7 +301,7 @@ namespace FakturowniaService.task
 
                     query = @"
                     SELECT TOP 2 [record_count], sum_arbevetel 
-                    FROM [vir].[dbo].[t_qad_arbevetel_import_log_2025]
+                    FROM [vir].[dbo].[t_qad_arbevetel_import_log_2026]
                     ORDER BY [date] DESC";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
@@ -235,9 +321,9 @@ namespace FakturowniaService.task
                         int previousRecordCount = results.Count > 1 ? results[1].RecordCount : 0;
                         decimal latestArbevSum = results.Count > 0 ? results[0].SumArbevetel : 0;
 
-                        metricsService.Revenue2025RecordCount = latestRecordCount;
-                        metricsService.Revenue2025RecordCountDelta = latestRecordCount - previousRecordCount;
-                        metricsService.Revenue2025Sum = latestArbevSum;
+                        metricsService.Revenue2026RecordCount = latestRecordCount;
+                        metricsService.Revenue2026RecordCountDelta = latestRecordCount - previousRecordCount;
+                        metricsService.Revenue2026Sum = latestArbevSum;
 
                         log.LogDebug($"Recorded metrics: RevenueRecordCount {latestRecordCount}, RevenueRecordCountDelta {latestRecordCount - previousRecordCount}, RevenueSum {latestArbevSum}");
                     }

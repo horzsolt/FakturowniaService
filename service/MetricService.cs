@@ -28,11 +28,34 @@ namespace FakturowniaService
         private int job2025_2ExecutionStatus;
         private double execution2025_2Duration;
 
+        private int job2026_1ExecutionStatus;
+        private int revenue2026RecordCount;
+        private int revenue2026RecordCountDelta;
+        private double execution2026Duration;
+        private decimal revenue2026Sum;
+
+        private int job2026_2ExecutionStatus;
+        private double execution2026_2Duration;
+
+        private int job2026_3ExecutionStatus;
+        private double execution2026_3Duration;
+
+        private int job2026_All_ExecutionStatus;
         private int sqlClientCount;
         private long diskfreebytes;
         private long pagefilesizebytes;
 
         private readonly ILogger<MetricService> log;
+
+        void UpdateOverallStatus()
+        {
+            job2026_All_ExecutionStatus =
+                (job2026_1ExecutionStatus == 1 &&
+                 job2026_2ExecutionStatus == 1 &&
+                 job2026_3ExecutionStatus == 1)
+                    ? 1
+                    : 0;
+        }
         public double JobExecutionDuration
         {
             get
@@ -173,6 +196,114 @@ namespace FakturowniaService
             }
         }
 
+        public double Job2026ExecutionDuration
+        {
+            get
+            {
+                return execution2026Duration;
+            }
+            set
+            {
+                execution2026Duration = value;
+            }
+        }
+        public int Job2026ExecutionStatus
+        {
+            get
+            {
+                return job2026_1ExecutionStatus;
+            }
+            set
+            {
+                job2026_1ExecutionStatus = value;
+                UpdateOverallStatus();
+            }
+        }
+
+        public double Job2026_2ExecutionDuration
+        {
+            get
+            {
+                return execution2026_2Duration;
+            }
+            set
+            {
+                execution2026_2Duration = value;
+                UpdateOverallStatus();
+            }
+        }
+        public int Job2026_2ExecutionStatus
+        {
+            get
+            {
+                return job2026_2ExecutionStatus;
+            }
+            set
+            {
+                job2026_2ExecutionStatus = value;
+                UpdateOverallStatus();
+            }
+        }
+
+        public double Job2026_3ExecutionDuration
+        {
+            get
+            {
+                return execution2026_3Duration;
+            }
+            set
+            {
+                execution2026_3Duration = value;
+            }
+        }
+
+        public int Job2026_3ExecutionStatus
+        {
+            get
+            {
+                return job2026_3ExecutionStatus;
+            }
+            set
+            {
+                job2026_3ExecutionStatus = value;
+            }
+        }
+        public int Revenue2026RecordCount
+        {
+            get
+            {
+                return revenue2026RecordCount;
+            }
+            set
+            {
+                revenue2026RecordCount = value;
+            }
+        }
+
+        public int Revenue2026RecordCountDelta
+        {
+            get
+            {
+                return revenue2026RecordCountDelta;
+            }
+            set
+            {
+                revenue2026RecordCountDelta = value;
+            }
+        }
+
+        public decimal Revenue2026Sum
+        {
+            get
+            {
+                return revenue2026Sum;
+            }
+            set
+            {
+                revenue2026Sum = value;
+            }
+        }
+
         public int SQLClientCount
         {
             get
@@ -223,6 +354,13 @@ namespace FakturowniaService
             Revenue2025RecordCountDelta = 1;
             Revenue2025Sum = 0;
             Job2025ExecutionDuration = 0;
+
+            Job2026ExecutionStatus = 1;
+            Job2026_2ExecutionStatus = 1;
+            Revenue2026RecordCount = 1;
+            Revenue2026RecordCountDelta = 1;
+            Revenue2026Sum = 0;
+            Job2026ExecutionDuration = 0;
 
             SQLClientCount = 0;
             pagefilesizebytes = 0;
@@ -346,6 +484,42 @@ namespace FakturowniaService
                 unit: "megabyte",
                 observeValue: () => new Measurement<long>(Pagefilesizebytes),
                 description: "Pagefile size in MB."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_execution_status",
+                unit: "value",
+                observeValue: () => new Measurement<int>(job2026_All_ExecutionStatus),
+                description:
+                "The result code of the latest MSSQL QAD-VIR 2026 refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_record",
+                unit: "value",
+                observeValue: () => new Measurement<int>(Revenue2026RecordCount),
+                description: "VIR Revenue2026 record count."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_record_delta",
+                unit: "value",
+                observeValue: () => new Measurement<int>(Revenue2026RecordCountDelta),
+                description: "VIR Revenue2026 record count delta."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_revenue_sum",
+                unit: "money",
+                observeValue: () => new Measurement<decimal>(Revenue2026Sum),
+                description: "VIR Revenue2026 summary value."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_execution_duration",
+                unit: "seconds",
+                observeValue: () => new Measurement<double>(Job2026ExecutionDuration),
+                description: "VIR Revenue2026 job duration."
             );
         }
 

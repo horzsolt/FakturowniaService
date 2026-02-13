@@ -140,17 +140,17 @@ namespace FakturExport
                         using (logger.BeginScope("Console mode"))
                         {
                             logger.LogInformation("Starting the service in interactive mode.");
-                            var fakturService = serviceProvider.GetRequiredService<FakturService>();
-                            fakturService.StartAsConsole(null);
+                            //var fakturService = serviceProvider.GetRequiredService<FakturService>();
+                            //fakturService.StartAsConsole(null);
                             
 
-                            /*var etlTasks = serviceProvider.GetServices<ETLTask>();
+                            var etlTasks = serviceProvider.GetServices<ETLTask>();
                             var fakturTask = etlTasks.FirstOrDefault(t => t.GetType() == typeof(FakturowniaService.FakturInvoiceImport));
 
                             if (fakturTask != null)
                             {
                                 fakturTask.ExecuteTask(); // Run the task
-                            }*/
+                            }
 
 
                             /*var jobStatusService = serviceProvider.GetRequiredService<SQLClientMonitorService>();
