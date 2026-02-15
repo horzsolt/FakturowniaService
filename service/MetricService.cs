@@ -267,6 +267,7 @@ namespace FakturowniaService
             set
             {
                 job2026_3ExecutionStatus = value;
+                UpdateOverallStatus();
             }
         }
         public int Revenue2026RecordCount
@@ -357,6 +358,7 @@ namespace FakturowniaService
             Job2025ExecutionDuration = 0;
 
             Job2026ExecutionStatus = 1;
+            job2026_All_ExecutionStatus = 1;
             Job2026_2ExecutionStatus = 1;
             Revenue2026RecordCount = 1;
             Revenue2026RecordCountDelta = 1;

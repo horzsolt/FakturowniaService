@@ -47,7 +47,7 @@ namespace FakturowniaService.task
                             msdb.dbo.sysjobhistory AS h
                             ON j.job_id = h.job_id
                         WHERE 
-                            j.name LIKE 'QAD_VIR_2025_frissites%'
+                            j.name LIKE 'QAD_VIR_2025_ejszakai_frissites%'
                             AND h.instance_id = (
                                 SELECT MAX(instance_id) 
                                 FROM msdb.dbo.sysjobhistory 
@@ -102,11 +102,11 @@ namespace FakturowniaService.task
 
                                     if (status == "1")
                                     {
-                                        log.LogInformation($"QAD_VIR_2025_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogInformation($"QAD_VIR_2025_ejszakai_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
                                     else
                                     {
-                                        log.LogError($"QAD_VIR_2025_frissites failed at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogError($"QAD_VIR_2025_ejszakai_frissites failed at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
 
                                     if (_status == 1)
@@ -143,7 +143,7 @@ namespace FakturowniaService.task
                             msdb.dbo.sysjobhistory AS h
                             ON j.job_id = h.job_id
                         WHERE 
-                            j.name = 'QAD_VIR_2025_frissites_2'
+                            j.name = 'QAD_VIR_2025_ejszakai_frissites_2'
                             AND h.instance_id = (
                                 SELECT MAX(instance_id) 
                                 FROM msdb.dbo.sysjobhistory 
@@ -204,7 +204,7 @@ namespace FakturowniaService.task
 
                                     if (status == "1")
                                     {
-                                        log.LogInformation($"QAD_VIR_2025_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
+                                        log.LogInformation($"QAD_VIR_2025_ejszakai_frissites_2_frissites ran at {executedAt}, status {status}, duration {durationFormatted}, {message}");
                                     }
                                     else
                                     {
