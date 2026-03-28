@@ -4,7 +4,7 @@
 # For more information, please see https://aka.ms/containercompat
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/runtime:9.0-windowsservercore-ltsc2025 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-windowsservercore-ltsc2025 AS base
 USER ContainerUser
 WORKDIR /app
 
@@ -29,3 +29,4 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "FakturowniaService.dll"]
+ENV TZ=Europe/Budapest
