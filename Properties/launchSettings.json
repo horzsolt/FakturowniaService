@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FakturExport": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

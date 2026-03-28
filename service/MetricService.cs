@@ -469,6 +469,42 @@ namespace FakturowniaService
             );
 
             meter.CreateObservableGauge(
+                name: "revenue2026_job_execution_status",
+                unit: "value",
+                observeValue: () => new Measurement<int>(Job2026_2ExecutionStatus),
+                description:
+                "The result code of the latest MSSQL QAD-VIR refresh 2026 job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_record",
+                unit: "value",
+                observeValue: () => new Measurement<int>(Revenue2026RecordCount),
+                description: "VIR Revenue2026 record count."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_record_delta",
+                unit: "value",
+                observeValue: () => new Measurement<int>(Revenue2026RecordCountDelta),
+                description: "VIR Revenue2026 record count delta."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_revenue_sum",
+                unit: "money",
+                observeValue: () => new Measurement<decimal>(Revenue2026Sum),
+                description: "VIR Revenue2026 summary value."
+            );
+
+            meter.CreateObservableGauge(
+                name: "revenue2026_job_execution_duration",
+                unit: "seconds",
+                observeValue: () => new Measurement<double>(Job2026ExecutionDuration),
+                description: "VIR Revenue2026 job duration."
+            );
+
+            meter.CreateObservableGauge(
                 name: "sql_client_count",
                 unit: "value",
                 observeValue: () => new Measurement<int>(SQLClientCount),

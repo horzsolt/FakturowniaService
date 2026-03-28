@@ -1,20 +1,21 @@
 ﻿using FakturowniaService;
-using System;
-using System.IO;
-using System.Reflection;
+using FakturowniaService.task;
+using FakturowniaService.util;
+using log4net.Config;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
-using OpenTelemetry.Resources;
-using Microsoft.Extensions.DependencyInjection;
-using FakturowniaService.task;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using FakturowniaService.util;
-using System.Configuration.Install;
-using Microsoft.Extensions.Hosting;
-using System.Linq;
+using System;
 using System.Collections.Generic;
+using System.Configuration.Install;
 using System.Diagnostics.Metrics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace FakturExport
 {
@@ -111,6 +112,26 @@ namespace FakturExport
         }
 
         static void Main(string[] args)
+        {
+            string exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string log4NetConfigFilePath = Path.Combine(exeDirectory, "log4net.config");
+            XmlConfigurator.Configure(new FileInfo(log4NetConfigFilePath));
+
+            var builder = Host.CreateApplicationBuilder(args);
+
+            ConfigureServices(builder);
+
+            var host = builder.Build();
+
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
+            logger.LogInformation("Application started.");
+            logger.LogDebug("Framework: " + FRWK.GetEnvironmentVersion() + " " + FRWK.GetTargetFrameworkName() + " " + FRWK.GetFrameworkDescription());
+
+            host.Run();
+        }
+
+        static void _Main(string[] args)
         {
 
             //var services = new ServiceCollection();

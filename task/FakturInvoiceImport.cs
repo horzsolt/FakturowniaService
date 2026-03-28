@@ -35,6 +35,9 @@ namespace FakturowniaService
                           $"Password={Environment.GetEnvironmentVariable("VIR_SQL_PASSWORD")};" +
                           "Connection Timeout=500;Trust Server Certificate=true";
 
+                Configuration config = new Configuration();
+                config.TestMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VIR_TEST_MODE"));
+
                 using (var connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
@@ -43,6 +46,8 @@ namespace FakturowniaService
                     {
                         try
                         {
+
+
                             try
                             {
                                 DB.DeleteAllRows("Fakturownia_InvoiceItem", connection, transaction);
@@ -50,8 +55,12 @@ namespace FakturowniaService
                             }
                             finally
                             {
-                                DB.EnableForeignKeyCheck(connection, transaction, "Fakturownia_InvoiceItem", "FK_Fakturownia_InvoiceItem_InvoiceHead");
+                                if (!config.TestMode)
+                                {
+                                    DB.EnableForeignKeyCheck(connection, transaction, "Fakturownia_InvoiceItem", "FK_Fakturownia_InvoiceItem_InvoiceHead");
+                                }
                             }
+
 
                             foreach (string file in invoiceFiles)
                             {
@@ -67,7 +76,7 @@ namespace FakturowniaService
 
                                 foreach (var invoice in invoices)
                                 {
-                                    HTTP.DownloadPDF(pdfUrlTemplate, log, invoice.Id.ToString(), invoice.Number);
+                                    HTTP.DownloadPDF(pdfUrlTemplate, log, invoice.Id.ToString(), invoice.Number, config.TestMode);
                                     DB.InsertInvoiceHeader(invoice, connection, transaction, log);
 
                                     foreach (var item in invoice.Positions)
@@ -75,13 +84,20 @@ namespace FakturowniaService
                                         DB.InsertInvoiceItem(item, connection, transaction);
                                     }
                                 }
+
                             }
 
                             DB.InsertInvoiceImportLog(connection, transaction, Convert.ToInt32(stopwatch.Elapsed.TotalSeconds));
-                            transaction.Commit();
 
-                            stopwatch.Stop();
-                            metricsService.RecordInvoiceImportDuration(stopwatch.Elapsed.TotalSeconds);
+                            if (config.TestMode)
+                                transaction.Rollback();
+                            else
+                            {
+                                transaction.Commit();
+                                stopwatch.Stop();
+                                metricsService.RecordInvoiceImportDuration(stopwatch.Elapsed.TotalSeconds);
+                            }
+
                         }
                         catch (Exception ex)
                         {
@@ -90,7 +106,7 @@ namespace FakturowniaService
                         }
                     }
                 }
-                
+
                 log.LogInformation($"Elapsed Time: {stopwatch.Elapsed.Hours} hours, {stopwatch.Elapsed.Minutes} minutes, {stopwatch.Elapsed.Seconds} seconds");
             }
             catch (Exception ex)
