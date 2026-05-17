@@ -21,11 +21,20 @@ namespace FakturowniaService
 
             try
             {
+
+                Configuration config = new Configuration();
+                config.TestMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VIR_TEST_MODE"));
+
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
                 string dateFrom = "2023-01-01";
                 string dateTo = DateTime.Today.ToString("yyyy-MM-dd");
+
+                if (config.TestMode)
+                {
+                    dateFrom = "2026-03-25";
+                }
 
                 invoiceFiles = HTTP.DownloadAllInvoices(apiUrlTemplate, dateFrom, dateTo, log);
 
@@ -34,9 +43,6 @@ namespace FakturowniaService
                           $"User Id={Environment.GetEnvironmentVariable("VIR_SQL_USER")};" +
                           $"Password={Environment.GetEnvironmentVariable("VIR_SQL_PASSWORD")};" +
                           "Connection Timeout=500;Trust Server Certificate=true";
-
-                Configuration config = new Configuration();
-                config.TestMode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VIR_TEST_MODE"));
 
                 using (var connection = new SqlConnection(connectionString))
                 {

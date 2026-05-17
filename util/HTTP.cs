@@ -86,11 +86,6 @@ namespace FakturowniaService
 
         public static bool DownloadPDF(string apiUrlTemplate, ILogger<ETLTask> log, string invoiceId, string invoicenumber, bool testMode)
         {
-            if (testMode)
-            {
-                log.LogInformation($"Invoice download {invoicenumber} has skipped in test mode.");
-                return true;
-            }
 
             string tempDirectory = Environment.GetEnvironmentVariable("VIR_FAKTUR_INVOICE_DL_PATH");
             string outputFileName = MakeValidFilename(invoicenumber);

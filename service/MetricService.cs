@@ -262,6 +262,10 @@ namespace FakturowniaService
         {
             get
             {
+                if (log != null)
+                {
+                    log.LogDebug("Getting Job2026_3ExecutionStatus: {status}", job2026_3ExecutionStatus);
+                }
                 return job2026_3ExecutionStatus;
             }
             set
@@ -274,6 +278,10 @@ namespace FakturowniaService
         {
             get
             {
+                if (log != null)
+                {
+                    log.LogDebug("Getting Revenue2026RecordCount: {count}", revenue2026RecordCount);
+                }
                 return revenue2026RecordCount;
             }
             set
@@ -298,6 +306,10 @@ namespace FakturowniaService
         {
             get
             {
+                if (log != null)
+                {
+                    log.LogDebug("Getting Revenue2026Sum: {sum}", revenue2026Sum);
+                }
                 return revenue2026Sum;
             }
             set
@@ -310,6 +322,10 @@ namespace FakturowniaService
         {
             get
             {
+                if (log != null)
+                {
+                    log.LogDebug("Getting SQLClientCount: {count}", sqlClientCount);
+                }
                 return sqlClientCount;
             }
             set
@@ -322,6 +338,10 @@ namespace FakturowniaService
         {
             get
             {
+                if (log != null)
+                {
+                    log.LogDebug("Getting Diskfreebytes: {bytes}", diskfreebytes);
+                }
                 return diskfreebytes;
             }
             set
@@ -370,6 +390,10 @@ namespace FakturowniaService
             diskfreebytes = 0;
 
             log = logger;
+            if (log != null)
+            {
+                log.LogDebug("Initializing MetricService with serviceName: {serviceName}, serviceVersion: {serviceVersion}", serviceName, serviceVersion);
+            }
             meter = meterFactory.Create(serviceName, serviceVersion);
 
             productImportDuration = meter.CreateHistogram<double>(

@@ -35,7 +35,7 @@ namespace FakturowniaService
                 var delay = nextRun - now;
 
                 var readableDelay = $"{delay.Days} days, {delay.Hours} hours, {delay.Minutes} minutes, and {delay.Seconds} seconds";
-                log.LogInformation($"Next task scheduled to run in: {readableDelay}");
+                log.LogInformation($"Next Faktur import task is scheduled to run in: {readableDelay}");
 
                 try
                 {
