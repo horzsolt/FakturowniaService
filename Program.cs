@@ -32,6 +32,10 @@ namespace FakturExport
                 options.ServiceName = serviceName;
             });
 
+            string otelEndpoint =
+                Environment.GetEnvironmentVariable("OTEL_ENDPOINT")
+                 ?? "http://localhost:4318";
+
             appBuilder.Services.AddOpenTelemetry()
                 .WithTracing(builder =>
                 {
@@ -42,7 +46,7 @@ namespace FakturExport
                             serviceVersion: serviceVersion))
                         .AddOtlpExporter(o =>
                         {
-                            o.Endpoint = new Uri("http://172.26.0.1:4318/v1/traces");
+                            o.Endpoint = new Uri($"{otelEndpoint}/v1/traces");
                             o.Protocol = OtlpExportProtocol.HttpProtobuf;
                         });
                 })
@@ -56,7 +60,7 @@ namespace FakturExport
                         .AddRuntimeInstrumentation()
                         .AddOtlpExporter(o =>
                         {
-                            o.Endpoint = new Uri("http://172.26.0.1:4318/v1/metrics");
+                            o.Endpoint = new Uri($"{otelEndpoint}/v1/metrics");
                             o.Protocol = OtlpExportProtocol.HttpProtobuf;
                         });
                 });
@@ -77,7 +81,7 @@ namespace FakturExport
 
                     options.AddOtlpExporter(o =>
                     {
-                        o.Endpoint = new Uri("http://172.26.0.1:4318/v1/logs");
+                        o.Endpoint = new Uri($"{otelEndpoint}/v1/logs");
                         o.Protocol = OtlpExportProtocol.HttpProtobuf;
                     });
                 });
@@ -101,7 +105,7 @@ namespace FakturExport
             }
 
             appBuilder.Services.AddHostedService(sp =>
-                new FakturService(sp.GetRequiredService< ILogger < FakturService >>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
+                new FakturService(sp.GetRequiredService<ILogger<FakturService>>(), sp.GetRequiredService<IEnumerable<ETLTask>>()
                     .Where(t => t.GetType().GetCustomAttribute<FakturTaskAttribute>() != null)));
 
             appBuilder.Services.AddHostedService(sp =>
@@ -175,7 +179,7 @@ namespace FakturExport
                             logger.LogInformation("Starting the service in interactive mode.");
                             //var fakturService = serviceProvider.GetRequiredService<FakturService>();
                             //fakturService.StartAsConsole(null);
-                            
+
 
                             var etlTasks = serviceProvider.GetServices<ETLTask>();
                             var fakturTask = etlTasks.FirstOrDefault(t => t.GetType() == typeof(FakturowniaService.FakturInvoiceImport));
