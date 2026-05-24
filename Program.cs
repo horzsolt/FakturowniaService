@@ -1,6 +1,7 @@
 ﻿using FakturowniaService;
 using FakturowniaService.task;
 using FakturowniaService.util;
+using log4net;
 using log4net.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,6 +17,7 @@ using System.Configuration.Install;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Reflection;
 
 namespace FakturExport
@@ -139,7 +141,28 @@ namespace FakturExport
             var host = builder.Build();
 
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
-            //host.Services.GetRequiredService<MetricService>();
+
+            // Log the current process info to help identify the service name
+            var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+            logger.LogInformation($"Process name: {currentProcess.ProcessName}");
+            logger.LogInformation($"Process ID: {currentProcess.Id}");
+
+            try
+            {
+                int pid = System.Diagnostics.Process.GetCurrentProcess().Id;
+                using var searcher = new ManagementObjectSearcher(
+                    $"SELECT Name, StartName FROM Win32_Service WHERE ProcessId = {pid}");
+
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    logger.LogInformation($"Service name: {obj["Name"]}");
+                    logger.LogInformation($"Running as account: {obj["StartName"]}");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Could not determine service name: {ex}");
+            }
 
             logger.LogInformation("Application started.");
             logger.LogDebug("Framework: " + FRWK.GetEnvironmentVersion() + " " + FRWK.GetTargetFrameworkName() + " " + FRWK.GetFrameworkDescription());

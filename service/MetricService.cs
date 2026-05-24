@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Linq;
 
 //TODO Split this class into three different: revenue2026, revenue2026, the rest
 namespace FakturowniaService
@@ -13,12 +15,6 @@ namespace FakturowniaService
         private readonly Histogram<double> paymentImportDuration;
         private readonly Histogram<double> warehouseDocumentImportDuration;
         private readonly Histogram<double> warehouseImportDuration;
-
-        private int jobExecutionStatus;
-        private int revenueRecordCount;
-        private int revenueRecordCountDelta;
-        private double executionDuration;
-        private decimal revenueSum;
 
         private int job2025ExecutionStatus;
         private int revenue2025RecordCount;
@@ -43,10 +39,21 @@ namespace FakturowniaService
 
         private int job2026_All_ExecutionStatus;
         private int sqlClientCount;
-        private long diskfreebytes;
         private long pagefilesizebytes;
 
+        private readonly Dictionary<string, long> driveFreeBytesMap = new();
+
+        private long memoryTotalMB;
+        private long memoryFreeMB;
+        private long memoryUsedMB;
+        private double cpuLoadPercent;
+
         private readonly ILogger<MetricService> log;
+
+        public void UpdateDriveFreeSpace(string driveLetter, long freeMB)
+        {
+            driveFreeBytesMap[driveLetter] = freeMB;
+        }
 
         void UpdateOverallStatus()
         {
@@ -56,64 +63,6 @@ namespace FakturowniaService
                  job2026_3ExecutionStatus == 1)
                     ? 1
                     : 0;
-        }
-        public double JobExecutionDuration
-        {
-            get
-            {
-                return executionDuration;
-            }
-            set
-            {
-                executionDuration = value;
-            }
-        }
-        public int JobExecutionStatus
-        {
-            get
-            {
-                return jobExecutionStatus;
-            }
-            set
-            {
-                jobExecutionStatus = value;
-            }
-        }
-
-        public int RevenueRecordCount
-        {
-            get
-            {
-                return revenueRecordCount;
-            }
-            set
-            {
-                revenueRecordCount = value;
-            }
-        }
-
-        public int RevenueRecordCountDelta
-        {
-            get
-            {
-                return revenueRecordCountDelta;
-            }
-            set
-            {
-                revenueRecordCountDelta = value;
-            }
-        }
-
-        public decimal RevenueSum
-        {
-            get
-            {
-                return revenueSum;
-            }
-            set
-            {
-                revenueSum = value;
-            }
         }
 
         public double Job2025ExecutionDuration
@@ -334,22 +283,6 @@ namespace FakturowniaService
             }
         }
 
-        public long Diskfreebytes
-        {
-            get
-            {
-                if (log != null)
-                {
-                    log.LogDebug("Getting Diskfreebytes: {bytes}", diskfreebytes);
-                }
-                return diskfreebytes;
-            }
-            set
-            {
-                diskfreebytes = value;
-            }
-        }
-
         public long Pagefilesizebytes
         {
             get
@@ -362,14 +295,32 @@ namespace FakturowniaService
             }
         }
 
+        public long MemoryTotalMB
+        {
+            get => memoryTotalMB;
+            set => memoryTotalMB = value;
+        }
+
+        public long MemoryFreeMB
+        {
+            get => memoryFreeMB;
+            set => memoryFreeMB = value;
+        }
+
+        public long MemoryUsedMB
+        {
+            get => memoryUsedMB;
+            set => memoryUsedMB = value;
+        }
+
+        public double CpuLoadPercent
+        {
+            get => cpuLoadPercent;
+            set => cpuLoadPercent = value;
+        }
+
         public MetricService(IMeterFactory meterFactory, ILogger<MetricService> logger, string serviceName, string serviceVersion)
         {
-            JobExecutionStatus = 1;
-            RevenueRecordCount = 1;
-            RevenueRecordCountDelta = 1;
-            RevenueSum = 0;
-            JobExecutionDuration = 0;
-
             Job2025ExecutionStatus = 1;
             Job2025_2ExecutionStatus = 1;
             Revenue2025RecordCount = 1;
@@ -387,7 +338,6 @@ namespace FakturowniaService
 
             SQLClientCount = 0;
             pagefilesizebytes = 0;
-            diskfreebytes = 0;
 
             log = logger;
             if (log != null)
@@ -419,42 +369,6 @@ namespace FakturowniaService
             warehouseImportDuration = meter.CreateHistogram<double>(
               name: "faktur_warehouse_duration", unit: "seconds",
               description: "Warehouse import duration in seconds.");
-
-            meter.CreateObservableGauge(
-                name: "revenue_job_execution_status",
-                unit: "value",
-                observeValue: () => new Measurement<int>(JobExecutionStatus),
-                description:
-                "The result code of the latest MSSQL QAD-VIR refresh job execution (0 = Failed, 1 = Succeeded, 2 = Retry, 3 = Canceled)"
-            );
-
-            meter.CreateObservableGauge(
-                name: "revenue_job_record",
-                unit: "value",
-                observeValue: () => new Measurement<int>(RevenueRecordCount),
-                description: "VIR Revenue record count."
-            );
-
-            meter.CreateObservableGauge(
-                name: "revenue_job_record_delta",
-                unit: "value",
-                observeValue : () => new Measurement<int>(RevenueRecordCountDelta),
-                description: "VIR Revenue record count delta."
-            );
-
-            meter.CreateObservableGauge(
-                name: "revenue_job_revenue_sum",
-                unit: "money",
-                observeValue: () => new Measurement<decimal>(RevenueSum),
-                description: "VIR Revenue summary value."
-            );
-
-            meter.CreateObservableGauge(
-                name: "revenue_job_execution_duration",
-                unit: "seconds",
-                observeValue: () => new Measurement<double>(JobExecutionDuration),
-                description: "VIR Revenue job duration."
-            );
 
             meter.CreateObservableGauge(
                 name: "revenue2025_job_execution_status",
@@ -535,11 +449,12 @@ namespace FakturowniaService
                 description: "Number of connected SQL clients."
             );
 
-            meter.CreateObservableGauge(
-                name: "free_disk_space",
+            meter.CreateObservableGauge<long>(
+                name: "free_disk_space_per_drive",
                 unit: "megabyte",
-                observeValue: () => new Measurement<long>(Diskfreebytes),
-                description: "Free MB on the C disk."
+                observeValues: () => driveFreeBytesMap.Select(kv =>
+                    new Measurement<long>(kv.Value, new KeyValuePair<string, object?>("drive", kv.Key))),
+                description: "Free MB per local fixed drive."
             );
 
             meter.CreateObservableGauge(
@@ -583,6 +498,34 @@ namespace FakturowniaService
                 unit: "seconds",
                 observeValue: () => new Measurement<double>(Job2026ExecutionDuration),
                 description: "VIR Revenue2026 job duration."
+            );
+
+            meter.CreateObservableGauge(
+                name: "host_memory_total",
+                unit: "megabyte",
+                observeValue: () => new Measurement<long>(MemoryTotalMB),
+                description: "Total physical memory in MB."
+            );
+
+            meter.CreateObservableGauge(
+                name: "host_memory_free",
+                unit: "megabyte",
+                observeValue: () => new Measurement<long>(MemoryFreeMB),
+                description: "Free physical memory in MB."
+            );
+
+            meter.CreateObservableGauge(
+                name: "host_memory_used",
+                unit: "megabyte",
+                observeValue: () => new Measurement<long>(MemoryUsedMB),
+                description: "Used physical memory in MB."
+            );
+
+            meter.CreateObservableGauge(
+                name: "host_cpu_load",
+                unit: "percent",
+                observeValue: () => new Measurement<double>(CpuLoadPercent),
+                description: "Average CPU load percentage across all processors."
             );
         }
 

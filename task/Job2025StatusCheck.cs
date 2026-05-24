@@ -88,7 +88,7 @@ namespace FakturowniaService.task
 
                                     if (executionTime.Length != 6) executionTime = "0" + executionTime;
 
-                                    log.LogDebug($"Last job execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
+                                    log.LogDebug($"Last 2025 job execution status {status}, started at {executionDate} {executionTime}, duration: {duration}");
 
                                     DateTime date = DateTime.ParseExact(executionDate, "yyyyMMdd", null);
                                     DateTime time = DateTime.ParseExact(executionTime, "HHmmss", null);
@@ -249,7 +249,7 @@ namespace FakturowniaService.task
                         metricsService.Revenue2025RecordCountDelta = latestRecordCount - previousRecordCount;
                         metricsService.Revenue2025Sum = latestArbevSum;
 
-                        log.LogDebug($"Recorded metrics: RevenueRecordCount {latestRecordCount}, RevenueRecordCountDelta {latestRecordCount - previousRecordCount}, RevenueSum {latestArbevSum}");
+                        log.LogDebug($"Recorded metrics: Revenue2025RecordCount {latestRecordCount}, Revenue2025RecordCountDelta {latestRecordCount - previousRecordCount}, RevenueSum {latestArbevSum}");
                     }
                 }
             }

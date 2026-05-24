@@ -2,7 +2,6 @@
 for /f %%a in ('docker network inspect nat --format "{{(index .IPAM.Config 0).Gateway}}"') do set DOCKER_GATEWAY=%%a
 
 echo %DOCKER_GATEWAY%
-
 docker pull horzsolt/fakturowniaservice:latest
 
 docker rm -f fakturowniaservice 2>nul
@@ -28,7 +27,7 @@ docker run -d ^
   -e VIR_PATIKAMAN_USERNAME="%VIR_PATIKAMAN_USERNAME%" ^
   -e VIR_TEST_MODE=FALSE ^
   -e TZ=Europe/Budapest ^
-  -e OTEL_ENDPOINT=http://%DOCKER_GATEWAY%:4318 ^  
+  -e OTEL_ENDPOINT=http://%DOCKER_GATEWAY%:4318 ^
   -v C:\VIR\Faktur\logs:C:\app\logs ^
   -v C:\VIR\Faktur\pdfs:C:\app\pdf ^
   horzsolt/fakturowniaservice:latest

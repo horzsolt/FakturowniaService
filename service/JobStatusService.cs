@@ -30,7 +30,7 @@ namespace FakturowniaService
                 var delay = nextRun - now;
 
                 var readableDelay = $"{delay.Hours} hours, {delay.Minutes} minutes, and {delay.Seconds} seconds";
-                log.LogInformation($"Next task scheduled to run in: {readableDelay}");
+                log.LogInformation($"Next job status task scheduled to run in: {readableDelay}");
 
                 try
                 {
