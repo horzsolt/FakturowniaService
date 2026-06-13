@@ -28,5 +28,7 @@ RUN dotnet publish "./FakturExport.csproj" -c %BUILD_CONFIGURATION% -o /app/publ
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "FakturowniaService.dll"]
+COPY entrypoint.ps1 .
+ENTRYPOINT ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\app\\entrypoint.ps1"]
 ENV TZ=Europe/Budapest
+ENV OTEL_ENDPOINT=auto
