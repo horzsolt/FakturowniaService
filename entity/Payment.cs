@@ -1,7 +1,5 @@
 ﻿using FakturowniaService.util;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace FakturowniaService
@@ -20,13 +18,7 @@ namespace FakturowniaService
         public string Provider { get; set; }
         public string Provider_Title { get; set; }
         public string Provider_Status { get; set; }
-
-        [Newtonsoft.Json.JsonIgnore]
         public bool? Paid { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("paid")]
-        [Newtonsoft.Json.JsonConverter(typeof(PaymentPaidConverter))]
-        public decimal? Paid_Amount { get; set; }
         public DateTimeOffset? Paid_Date { get; set; }
 
         [JsonConverter(typeof(DecimalStringConverter))]
@@ -124,115 +116,6 @@ namespace FakturowniaService
         public decimal? Additional_Discount_Amount { get; set; }
         public string Gocardless_Payment_Id { get; set; }
         public string Payment_Callback { get; set; }
-        public string Number { get; set; }
-        public DateTime? Issue_Date { get; set; }
-        public DateTime? Payment_To { get; set; }
-        public string Payment_To_Kind { get; set; }
-        public string Payment_Type { get; set; }
-        public DateTime? Sell_Date { get; set; }
-        public string Sell_Date_Kind { get; set; }
-        public string Place { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Price_Gross { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Price_Net { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Price_Tax { get; set; }
-        public string Seller_Name { get; set; }
-        public string Seller_Street { get; set; }
-        public string Seller_Post_Code { get; set; }
-        public string Seller_City { get; set; }
-        public string Seller_Country { get; set; }
-        public string Seller_Bank { get; set; }
-        public string Seller_Bank_Account { get; set; }
-        public long? Seller_Bank_Account_Id { get; set; }
-        public string Seller_Email { get; set; }
-        public string Seller_Fax { get; set; }
-        public string Seller_Person { get; set; }
-        public string Seller_Phone { get; set; }
-        public string Seller_Tax_No { get; set; }
-        public string Seller_Tax_No_Kind { get; set; }
-        public string Seller_Www { get; set; }
-        public string Delivery_Address { get; set; }
-        public string Description_Footer { get; set; }
-        public string Description_Long { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Discount { get; set; }
-        public string Discount_Kind { get; set; }
-        public string Exchange_Currency { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Exchange_Currency_Rate { get; set; }
-        public DateTime? Exchange_Date { get; set; }
-        public string Exchange_Kind { get; set; }
-        public string Exchange_Note { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Exchange_Rate { get; set; }
-        public bool? Buyer_Company { get; set; }
-        public string Buyer_Name { get; set; }
-        public string Buyer_Street { get; set; }
-        public string Buyer_Post_Code { get; set; }
-        public string Buyer_City { get; set; }
-        public string Buyer_Country { get; set; }
-        public string Buyer_Bank { get; set; }
-        public string Buyer_Bank_Account { get; set; }
-        public string Buyer_Email { get; set; }
-        public string Buyer_Fax { get; set; }
-        public string Buyer_Person { get; set; }
-        public string Buyer_Phone { get; set; }
-        public string Buyer_Tax_No { get; set; }
-        public string Buyer_Tax_No_Kind { get; set; }
-        public string Buyer_Www { get; set; }
-        public bool? Show_Discount { get; set; }
-        public int? Split_Payment { get; set; }
-        public string Buyer_Mobile_Phone { get; set; }
-        public string Seller_Bdo_No { get; set; }
-        public string Seller_Ksef_Taxpayer_Status { get; set; }
-        public string E_Receipt_View_Url { get; set; }
-        public List<PaymentPosition> Positions { get; set; }
-        public JToken Descriptions { get; set; }
-    }
-
-    public class PaymentPosition
-    {
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public string Additional_Info { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Quantity { get; set; }
-        public string Quantity_Unit { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Discount { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Discount_Percent { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Price_Net { get; set; }
-        public string Tax { get; set; }
-        public string Tax2 { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Price_Tax { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Price_Gross { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Total_Price_Net { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Total_Price_Tax { get; set; }
-
-        [JsonConverter(typeof(DecimalStringConverter))]
-        public decimal? Total_Price_Gross { get; set; }
     }
 
 }

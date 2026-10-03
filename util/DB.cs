@@ -249,15 +249,7 @@ namespace FakturowniaService
                 test, recurring, client_bank_account_number, bank_account_id, additional_fields, overpaid, 
                 external_payment_id, cheque_number, card_number, bank, bank_account_balance, import_kind, 
                 import_ref, invoice_company, no_duplicate_md5, additional_discount_amount, gocardless_payment_id, 
-                payment_callback, paid_amount, number, issue_date, payment_to, payment_to_kind, payment_type, sell_date,
-                sell_date_kind, place, price_gross, price_net, price_tax, seller_name, seller_street, seller_post_code,
-                seller_city, seller_country, seller_bank, seller_bank_account, seller_bank_account_id, seller_email,
-                seller_fax, seller_person, seller_phone, seller_tax_no, seller_tax_no_kind, seller_www, delivery_address,
-                description_footer, description_long, discount, discount_kind, exchange_currency, exchange_currency_rate,
-                exchange_date, exchange_kind, exchange_note, exchange_rate, buyer_company, buyer_name, buyer_street,
-                buyer_post_code, buyer_city, buyer_country, buyer_bank, buyer_bank_account, buyer_email, buyer_fax,
-                buyer_person, buyer_phone, buyer_tax_no, buyer_tax_no_kind, buyer_www, show_discount, split_payment,
-                buyer_mobile_phone, seller_bdo_no, seller_ksef_taxpayer_status, e_receipt_view_url, positions, descriptions
+                payment_callback
             ) VALUES (
                 @id, @description, @comment, @invoice_comment, @provider, @provider_title, @provider_status, 
                 @paid, @paid_date, @price, @currency, @generate_invoice, @invoice_name, @invoice_tax_no, 
@@ -272,16 +264,7 @@ namespace FakturowniaService
                 @test, @recurring, @client_bank_account_number, @bank_account_id, @additional_fields, @overpaid, 
                 @external_payment_id, @cheque_number, @card_number, @bank, @bank_account_balance, @import_kind, 
                 @import_ref, @invoice_company, @no_duplicate_md5, @additional_discount_amount, @gocardless_payment_id, 
-                @payment_callback, @paid_amount, @number, @issue_date, @payment_to, @payment_to_kind, @payment_type,
-                @sell_date, @sell_date_kind, @place, @price_gross, @price_net, @price_tax, @seller_name, @seller_street,
-                @seller_post_code, @seller_city, @seller_country, @seller_bank, @seller_bank_account, @seller_bank_account_id,
-                @seller_email, @seller_fax, @seller_person, @seller_phone, @seller_tax_no, @seller_tax_no_kind, @seller_www,
-                @delivery_address, @description_footer, @description_long, @discount, @discount_kind, @exchange_currency,
-                @exchange_currency_rate, @exchange_date, @exchange_kind, @exchange_note, @exchange_rate, @buyer_company,
-                @buyer_name, @buyer_street, @buyer_post_code, @buyer_city, @buyer_country, @buyer_bank, @buyer_bank_account,
-                @buyer_email, @buyer_fax, @buyer_person, @buyer_phone, @buyer_tax_no, @buyer_tax_no_kind, @buyer_www,
-                @show_discount, @split_payment, @buyer_mobile_phone, @seller_bdo_no, @seller_ksef_taxpayer_status,
-                @e_receipt_view_url, @positions, @descriptions
+                @payment_callback
             );";
 
             using (var command = new SqlCommand(query, connection, transaction))
@@ -294,12 +277,7 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@provider", payment.Provider ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@provider_title", payment.Provider_Title ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@provider_status", payment.Provider_Status ?? (object)DBNull.Value);
-                object paidFlag = DBNull.Value;
-                if (payment.Paid.HasValue)
-                    paidFlag = payment.Paid.Value;
-                else if (payment.Paid_Amount.HasValue)
-                    paidFlag = payment.Paid_Amount.Value != 0m;
-                command.Parameters.AddWithValue("@paid", paidFlag);
+                command.Parameters.AddWithValue("@paid", payment.Paid ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@paid_date", payment.Paid_Date ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@price", payment.Price ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@currency", payment.Currency ?? (object)DBNull.Value);
@@ -385,67 +363,6 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@additional_discount_amount", payment.Additional_Discount_Amount ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@gocardless_payment_id", payment.Gocardless_Payment_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@payment_callback", payment.Payment_Callback ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@paid_amount", payment.Paid_Amount ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@number", payment.Number ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@issue_date", payment.Issue_Date ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@payment_to", payment.Payment_To ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@payment_to_kind", payment.Payment_To_Kind ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@payment_type", payment.Payment_Type ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@sell_date", payment.Sell_Date ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@sell_date_kind", payment.Sell_Date_Kind ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@place", payment.Place ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@price_gross", payment.Price_Gross ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@price_net", payment.Price_Net ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@price_tax", payment.Price_Tax ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_name", payment.Seller_Name ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_street", payment.Seller_Street ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_post_code", payment.Seller_Post_Code ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_city", payment.Seller_City ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_country", payment.Seller_Country ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_bank", payment.Seller_Bank ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_bank_account", payment.Seller_Bank_Account ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_bank_account_id", payment.Seller_Bank_Account_Id ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_email", payment.Seller_Email ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_fax", payment.Seller_Fax ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_person", payment.Seller_Person ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_phone", payment.Seller_Phone ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_tax_no", payment.Seller_Tax_No ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_tax_no_kind", payment.Seller_Tax_No_Kind ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_www", payment.Seller_Www ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@delivery_address", payment.Delivery_Address ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@description_footer", payment.Description_Footer ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@description_long", payment.Description_Long ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@discount", payment.Discount ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@discount_kind", payment.Discount_Kind ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@exchange_currency", payment.Exchange_Currency ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@exchange_currency_rate", payment.Exchange_Currency_Rate ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@exchange_date", payment.Exchange_Date ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@exchange_kind", payment.Exchange_Kind ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@exchange_note", payment.Exchange_Note ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@exchange_rate", payment.Exchange_Rate ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_company", payment.Buyer_Company ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_name", payment.Buyer_Name ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_street", payment.Buyer_Street ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_post_code", payment.Buyer_Post_Code ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_city", payment.Buyer_City ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_country", payment.Buyer_Country ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_bank", payment.Buyer_Bank ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_bank_account", payment.Buyer_Bank_Account ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_email", payment.Buyer_Email ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_fax", payment.Buyer_Fax ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_person", payment.Buyer_Person ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_phone", payment.Buyer_Phone ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_tax_no", payment.Buyer_Tax_No ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_tax_no_kind", payment.Buyer_Tax_No_Kind ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_www", payment.Buyer_Www ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@show_discount", payment.Show_Discount ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@split_payment", payment.Split_Payment ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@buyer_mobile_phone", payment.Buyer_Mobile_Phone ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_bdo_no", payment.Seller_Bdo_No ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@seller_ksef_taxpayer_status", payment.Seller_Ksef_Taxpayer_Status ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@e_receipt_view_url", payment.E_Receipt_View_Url ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@positions", ToJsonColumn(payment.Positions));
-                command.Parameters.AddWithValue("@descriptions", ToJsonColumn(payment.Descriptions));
 
                 command.ExecuteNonQuery();
             }
