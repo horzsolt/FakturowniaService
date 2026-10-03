@@ -776,8 +776,8 @@ namespace FakturowniaService
                 client_city, client_bank_account, client_bank, client_country, client_note, client_email, client_phone, client_delivery_address, client_use_delivery_address, exchange_currency,
                 exchange_kind, exchange_currency_rate, exchange_date, exchange_note, price_net, price_gross, price_tax, calculating_strategy_position, calculating_strategy_sum,
                 calculating_strategy_invoice_form_price_kind, transaction_date, template_id, purchase_price_net, purchase_price_gross, purchase_price_tax, from_form_with_actions,
-                from_api, origin, additional_info, additional_info_desc, status, quantity, exchange_rate_den, exchange_currency_rate_den,
-                fiscal_currency, fiscal_exchange_rate, fiscal_exchange_rate_den, search_data)
+                from_api, origin, additional_info, additional_info_desc, status, quantity, calculate_sums_cache_updated_at, exchange_rate_den, exchange_currency_rate_den,
+                fiscal_currency, fiscal_exchange_rate, fiscal_exchange_rate_den, search_data, warehouse_actions)
                 VALUES (@id, @kind, @supplier, @recipient, @description, @issue_date, @number, @warehouse_id, @updater_id, @creator_id, @deleted,
                 @created_at, @updated_at, @pattern, @pattern_nr, @pattern_nr_m, @pattern_nr_d, @issue_year, @external_id, @exchange_rate, @currency, @oid, @client_id, @expected_delivery_date,
                 @recipient_ref, @warehouse_document_id, @seller_person, @buyer_person, @gave_person, @department_id, @lang, @department_name, @department_tax_no_kind, @department_tax_no,
@@ -786,8 +786,8 @@ namespace FakturowniaService
                 @client_city, @client_bank_account, @client_bank, @client_country, @client_note, @client_email, @client_phone, @client_delivery_address, @client_use_delivery_address, @exchange_currency,
                 @exchange_kind, @exchange_currency_rate, @exchange_date, @exchange_note, @price_net, @price_gross, @price_tax, @calculating_strategy_position, @calculating_strategy_sum,
                 @calculating_strategy_invoice_form_price_kind, @transaction_date, @template_id, @purchase_price_net, @purchase_price_gross, @purchase_price_tax, @from_form_with_actions,
-                @from_api, @origin, @additional_info, @additional_info_desc, @status, @quantity, @exchange_rate_den, @exchange_currency_rate_den,
-                @fiscal_currency, @fiscal_exchange_rate, @fiscal_exchange_rate_den, @search_data);
+                @from_api, @origin, @additional_info, @additional_info_desc, @status, @quantity, @calculate_sums_cache_updated_at, @exchange_rate_den, @exchange_currency_rate_den,
+                @fiscal_currency, @fiscal_exchange_rate, @fiscal_exchange_rate_den, @search_data, @warehouse_actions);
             ";
 
             using (var command = new SqlCommand(query, connection, transaction))

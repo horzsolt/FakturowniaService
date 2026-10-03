@@ -1,6 +1,8 @@
 ﻿#nullable enable
 
+using Newtonsoft.Json;
 using System;
+using System.Runtime.Serialization;
 
 namespace FakturowniaService
 {
@@ -104,11 +106,58 @@ namespace FakturowniaService
         public string? additional_info_desc { get; set; }
         public string? status { get; set; }
         public decimal quantity { get; set; }
+        public DateTime? calculate_sums_cache_updated_at { get; set; }
         public decimal exchange_rate_den { get; set; }
         public decimal exchange_currency_rate_den { get; set; }
         public string? fiscal_currency { get; set; }
         public decimal fiscal_exchange_rate { get; set; }
         public decimal fiscal_exchange_rate_den { get; set; }
         public string? search_data { get; set; }
+
+        [JsonConverter(typeof(RawJsonStringConverter))]
+        public string? warehouse_actions { get; set; }
+
+        [JsonProperty("calculating_strategy")]
+        private CalculatingStrategyData? calculating_strategy { get; set; }
+
+        [JsonProperty("additional_fields")]
+        private AdditionalFieldsData? additional_fields { get; set; }
+
+        [OnDeserialized]
+        private void CopyNestedFields(StreamingContext context)
+        {
+            if (calculating_strategy != null)
+            {
+                calculating_strategy_position = calculating_strategy.position;
+                calculating_strategy_sum = calculating_strategy.sum;
+                calculating_strategy_invoice_form_price_kind = calculating_strategy.invoice_form_price_kind;
+            }
+
+            if (additional_fields != null)
+            {
+                status = additional_fields.status;
+                quantity = (decimal)additional_fields.quantity;
+                calculate_sums_cache_updated_at = additional_fields.calculate_sums_cache?.updated_at;
+            }
+        }
+
+        private class CalculatingStrategyData
+        {
+            public string? position { get; set; }
+            public string? sum { get; set; }
+            public string? invoice_form_price_kind { get; set; }
+        }
+
+        private class AdditionalFieldsData
+        {
+            public string? status { get; set; }
+            public double quantity { get; set; }
+            public CalculateSumsCacheData? calculate_sums_cache { get; set; }
+        }
+
+        private class CalculateSumsCacheData
+        {
+            public DateTime? updated_at { get; set; }
+        }
     }
 }
