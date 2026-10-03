@@ -65,6 +65,12 @@ namespace FakturowniaService
         public string Elastic_Price_Details { get; set; }
         public DateTime? Elastic_Price_Date_Trigger { get; set; }
         public long? Iid { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
+        public decimal? Purchase_Price_Net { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
+        public decimal? Purchase_Price_Gross { get; set; }
         public bool Use_Formula { get; set; }
         public string Formula { get; set; }
         public string Formula_Test_Field { get; set; }
@@ -78,6 +84,10 @@ namespace FakturowniaService
         public string Package_Product_Ids { get; set; }
         public long? Department_Id { get; set; }
         public bool Use_Product_Warehouses { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
+        public decimal? Purchase_Price_Tax { get; set; }
+        public string Purchase_Tax { get; set; }
         public bool Service { get; set; }
         public bool Use_Quantity_Discount { get; set; }
         public string Quantity_Discount_Details { get; set; }
@@ -102,6 +112,7 @@ namespace FakturowniaService
         public int Attachments_Count { get; set; }
         public string Image_Url { get; set; }
         public string Tax2 { get; set; }
+        public string Purchase_Tax2 { get; set; }
         public string Supplier_Code { get; set; }
         public string Package_Products_Details { get; set; }
         public bool Siteor_Disabled { get; set; }
@@ -110,8 +121,12 @@ namespace FakturowniaService
         public string Accounting_Id { get; set; }
         public string Status { get; set; }
         public bool Restricted_To_Warehouses { get; set; }
-        //public string Gtu_Codes { get; set; }
-        //public string Tag_List { get; set; }
+
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
+        public string Gtu_Codes { get; set; }
+
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
+        public string Tag_List { get; set; }
         public string Gtu_Code { get; set; }
         public string Electronic_Service { get; set; }
         public bool? Is_Delivery { get; set; }

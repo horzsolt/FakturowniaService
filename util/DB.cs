@@ -119,11 +119,11 @@ namespace FakturowniaService
             form_fields_horizontal, form_fields, form_name, form_description, quantity_sold_outside,
             form_kind, form_template, elastic_price, next_product_id, quantity_sold_in_invoices, deleted, 
             code, currency, ecommerce, period, show_elastic_price, elastic_price_details, elastic_price_date_trigger,
-            iid, use_formula, formula, formula_test_field, stock_level, sync, category_id, kind, package, 
-            package_product_ids, department_id, use_product_warehouses, service, use_quantity_discount,
+            iid, purchase_price_net, purchase_price_gross, use_formula, formula, formula_test_field, stock_level, sync, category_id, kind, package, 
+            package_product_ids, department_id, use_product_warehouses, purchase_price_tax, purchase_tax, service, use_quantity_discount,
             quantity_discount_details, price_net_on_payment, warehouse_numbers_updated_at, ean_code, weight, 
             weight_unit, size_height, size_width, size, size_unit, auto_payment_department_id, attachments_count, 
-            image_url, tax2, supplier_code, package_products_details, siteor_disabled, use_moss, subscription_id,
+            image_url, tax2, purchase_tax2, supplier_code, package_products_details, siteor_disabled, use_moss, subscription_id,
             accounting_id, status, restricted_to_warehouses, gtu_codes, tag_list, gtu_code, electronic_service, 
             is_delivery
         ) VALUES (
@@ -133,11 +133,11 @@ namespace FakturowniaService
             @FormFieldsHorizontal, @FormFields, @FormName, @FormDescription, @QuantitySoldOutside, 
             @FormKind, @FormTemplate, @ElasticPrice, @NextProductId, @QuantitySoldInInvoices, @Deleted,
             @Code, @Currency, @Ecommerce, @Period, @ShowElasticPrice, @ElasticPriceDetails, @ElasticPriceDateTrigger,
-            @Iid, @UseFormula, @Formula, @FormulaTestField, @StockLevel, @Sync, @CategoryId, @Kind, @Package, 
-            @PackageProductIds, @DepartmentId, @UseProductWarehouses, @Service, @UseQuantityDiscount,
+            @Iid, @PurchasePriceNet, @PurchasePriceGross, @UseFormula, @Formula, @FormulaTestField, @StockLevel, @Sync, @CategoryId, @Kind, @Package, 
+            @PackageProductIds, @DepartmentId, @UseProductWarehouses, @PurchasePriceTax, @PurchaseTax, @Service, @UseQuantityDiscount,
             @QuantityDiscountDetails, @PriceNetOnPayment, @WarehouseNumbersUpdatedAt, @EanCode, @Weight,
             @WeightUnit, @SizeHeight, @SizeWidth, @Size, @SizeUnit, @AutoPaymentDepartmentId, @AttachmentsCount,
-            @ImageUrl, @Tax2, @SupplierCode, @PackageProductsDetails, @SiteorDisabled, @UseMoss, @SubscriptionId,
+            @ImageUrl, @Tax2, @PurchaseTax2, @SupplierCode, @PackageProductsDetails, @SiteorDisabled, @UseMoss, @SubscriptionId,
             @AccountingId, @Status, @RestrictedToWarehouses, @GtuCodes, @TagList, @GtuCode, @ElectronicService, 
             @IsDelivery
         )";
@@ -185,6 +185,8 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@ElasticPriceDetails", product.Elastic_Price_Details ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@ElasticPriceDateTrigger", product.Elastic_Price_Date_Trigger ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Iid", product.Iid ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@PurchasePriceNet", product.Purchase_Price_Net ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@PurchasePriceGross", product.Purchase_Price_Gross ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@UseFormula", product.Use_Formula);
                 command.Parameters.AddWithValue("@Formula", product.Formula ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@FormulaTestField", product.Formula_Test_Field ?? (object)DBNull.Value);
@@ -196,6 +198,8 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@PackageProductIds", product.Package_Product_Ids ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@DepartmentId", product.Department_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@UseProductWarehouses", product.Use_Product_Warehouses);
+                command.Parameters.AddWithValue("@PurchasePriceTax", product.Purchase_Price_Tax ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@PurchaseTax", product.Purchase_Tax ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Service", product.Service);
                 command.Parameters.AddWithValue("@UseQuantityDiscount", product.Use_Quantity_Discount);
                 command.Parameters.AddWithValue("@QuantityDiscountDetails", product.Quantity_Discount_Details ?? (object)DBNull.Value);
@@ -212,6 +216,7 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@AttachmentsCount", product.Attachments_Count);
                 command.Parameters.AddWithValue("@ImageUrl", product.Image_Url ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Tax2", product.Tax2 ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@PurchaseTax2", product.Purchase_Tax2 ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@SupplierCode", product.Supplier_Code ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@PackageProductsDetails", product.Package_Products_Details ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@SiteorDisabled", product.Siteor_Disabled);
@@ -220,8 +225,8 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@AccountingId", product.Accounting_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@Status", product.Status ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@RestrictedToWarehouses", product.Restricted_To_Warehouses);
-                command.Parameters.AddWithValue("@GtuCodes", (object)DBNull.Value);
-                command.Parameters.AddWithValue("@TagList", (object)DBNull.Value);
+                command.Parameters.AddWithValue("@GtuCodes", product.Gtu_Codes ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@TagList", product.Tag_List ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@GtuCode", product.Gtu_Code ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@ElectronicService", product.Electronic_Service ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@IsDelivery", product.Is_Delivery ?? (object)DBNull.Value);
