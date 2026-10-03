@@ -70,7 +70,7 @@ namespace FakturowniaService
 
                             foreach (string file in invoiceFiles)
                             {
-                                log.LogInformation($"Processing file: {file}");
+                                log.LogInformation($"Processing invoice JSON file: {file}");
 
                                 var settings = new JsonSerializerSettings
                                 {
@@ -82,7 +82,18 @@ namespace FakturowniaService
 
                                 foreach (var invoice in invoices)
                                 {
-                                    HTTP.DownloadPDF(pdfUrlTemplate, log, invoice.Id.ToString(), invoice.Number, config.TestMode);
+                                    bool pdfAvailable = string.Equals(invoice.Gov_Kind, "ksef", StringComparison.OrdinalIgnoreCase)
+                                        && string.Equals(invoice.Gov_Status, "ok", StringComparison.OrdinalIgnoreCase);
+
+                                    if (pdfAvailable)
+                                    {
+                                        HTTP.DownloadPDF(pdfUrlTemplate, log, invoice.Id.ToString(), invoice.Number, config.TestMode);
+                                    }
+                                    else
+                                    {
+                                        log.LogInformation($"Skipping PDF download for invoice {invoice.Number} ({invoice.Id}): gov_kind='{invoice.Gov_Kind}', gov_status='{invoice.Gov_Status}'.");
+                                    }
+
                                     DB.InsertInvoiceHeader(invoice, connection, transaction, log);
 
                                     foreach (var item in invoice.Positions)

@@ -48,5 +48,6 @@ namespace FakturowniaService
         public decimal? Lump_Sum_Tax { get; set; }
         public string CorrectedPosKind { get; set; }
         public string GtuCode { get; set; }
+        public string Technical_Tax { get; set; }
     }
 }

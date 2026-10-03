@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -178,6 +179,60 @@ namespace FakturowniaService
         public int? Split_Payment { get; set; }
         //public string Gtu_Codes { get; set; }
         //public string Procedure_Designations { get; set; }
+        public bool? Accounting_Doc { get; set; }
+        public string Payment_Status { get; set; }
+        public string Get_Tax2_Name { get; set; }
+        public CalculatingStrategy Calculating_Strategy { get; set; }
+        public string Delivery_Terms { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
+        public decimal? Agreed_Exchange_Rate { get; set; }
+        public string Agreed_Currency { get; set; }
+        public string Intermediary_Entity { get; set; }
+        public bool? Use_Oss { get; set; }
+        public bool? Document_Posted { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
+        public decimal? Adjust_Invoice_Price { get; set; }
+        public bool? Check_Fiscal_Print { get; set; }
+        public string Fiscal_Print_Error { get; set; }
+        public string Seller_Bdo_No { get; set; }
+        public string Seller_Ksef_Taxpayer_Status { get; set; }
+        public string Procedure_Vat_Margin { get; set; }
+        public string Gov_Link { get; set; }
+        public string Gov_Verification_Link { get; set; }
+        public string Payment_To_Description { get; set; }
+        public string Buyer_Jst { get; set; }
+        public string Buyer_Gv { get; set; }
+        public List<InvoiceBankAccount> Bank_Accounts { get; set; }
+        public JToken Issuers { get; set; }
+        public JToken Recipients { get; set; }
+        public JToken Descriptions { get; set; }
+        public JToken Transaction_Contracts { get; set; }
+        public JToken Transaction_Orders { get; set; }
+        public JToken Transaction_Batches { get; set; }
         public List<InvoiceItem> Positions { get; set; }
+    }
+
+    public class CalculatingStrategy
+    {
+        public string Position { get; set; }
+        public string Sum { get; set; }
+        public string Invoice_Form_Price_Kind { get; set; }
+    }
+
+    public class InvoiceBankAccount
+    {
+        public long? Id { get; set; }
+        public string Bank_Name { get; set; }
+        public string Bank_Account_Number { get; set; }
+        public string Bank_Currency { get; set; }
+        public string Bank_Swift { get; set; }
+        public string Formatted_Bank_Account_Number { get; set; }
+        public string Name { get; set; }
+        public string Account_Description { get; set; }
+        public bool? Own_Bank_Account { get; set; }
+        public bool? Factor_Bank_Account { get; set; }
+        public string Own_Bank_Account_Type { get; set; }
     }
 }

@@ -4,6 +4,8 @@ using FakturowniaService.entity;
 using FakturowniaService.task;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -390,7 +392,12 @@ namespace FakturowniaService
             products_margin, payment_url, view_url, buyer_mobile_phone, kind_text, invoice_for_receipt_id, receipt_for_invoice_id, 
             recipient_company, recipient_first_name, recipient_last_name, recipient_tax_no, recipient_street, recipient_post_code, 
             recipient_city, recipient_country, recipient_email, recipient_phone, recipient_note, overdue, get_tax_name, tax_visible, 
-            tax_name_type, split_payment, gtu_codes, procedure_designations
+            tax_name_type, split_payment, gtu_codes, procedure_designations, accounting_doc, payment_status, get_tax2_name,
+            calculating_strategy_position, calculating_strategy_sum, calculating_strategy_invoice_form_price_kind, delivery_terms,
+            agreed_exchange_rate, agreed_currency, intermediary_entity, use_oss, document_posted, adjust_invoice_price,
+            check_fiscal_print, fiscal_print_error, seller_bdo_no, seller_ksef_taxpayer_status, procedure_vat_margin, gov_link,
+            gov_verification_link, payment_to_description, buyer_jst, buyer_gv, bank_accounts, issuers, recipients, descriptions,
+            transaction_contracts, transaction_orders, transaction_batches
         ) VALUES (
             @id, @user_id, @app, @number, @place, @sell_date, @payment_type, @price_net, @price_gross, @currency, @status, @description, 
             @seller_name, @seller_tax_no, @seller_street, @seller_post_code, @seller_city, @seller_country, @seller_email, @seller_phone, 
@@ -412,7 +419,13 @@ namespace FakturowniaService
             @additional_invoice_field, @products_margin, @payment_url, @view_url, @buyer_mobile_phone, @kind_text, @invoice_for_receipt_id, 
             @receipt_for_invoice_id, @recipient_company, @recipient_first_name, @recipient_last_name, @recipient_tax_no, @recipient_street, 
             @recipient_post_code, @recipient_city, @recipient_country, @recipient_email, @recipient_phone, @recipient_note, @overdue, 
-            @get_tax_name, @tax_visible, @tax_name_type, @split_payment, @gtu_codes, @procedure_designations
+            @get_tax_name, @tax_visible, @tax_name_type, @split_payment, @gtu_codes, @procedure_designations, @accounting_doc,
+            @payment_status, @get_tax2_name, @calculating_strategy_position, @calculating_strategy_sum,
+            @calculating_strategy_invoice_form_price_kind, @delivery_terms, @agreed_exchange_rate, @agreed_currency,
+            @intermediary_entity, @use_oss, @document_posted, @adjust_invoice_price, @check_fiscal_print, @fiscal_print_error,
+            @seller_bdo_no, @seller_ksef_taxpayer_status, @procedure_vat_margin, @gov_link, @gov_verification_link,
+            @payment_to_description, @buyer_jst, @buyer_gv, @bank_accounts, @issuers, @recipients, @descriptions,
+            @transaction_contracts, @transaction_orders, @transaction_batches
         );";
 
             log.LogInformation($"Inserting invoice {invoice.Id} into the database.");
@@ -579,6 +592,36 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@split_payment", invoice.Split_Payment ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@gtu_codes", (object)DBNull.Value);
                 command.Parameters.AddWithValue("@procedure_designations", (object)DBNull.Value);
+                command.Parameters.AddWithValue("@accounting_doc", invoice.Accounting_Doc ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@payment_status", invoice.Payment_Status ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@get_tax2_name", invoice.Get_Tax2_Name ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@calculating_strategy_position", invoice.Calculating_Strategy?.Position ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@calculating_strategy_sum", invoice.Calculating_Strategy?.Sum ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@calculating_strategy_invoice_form_price_kind", invoice.Calculating_Strategy?.Invoice_Form_Price_Kind ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@delivery_terms", invoice.Delivery_Terms ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@agreed_exchange_rate", invoice.Agreed_Exchange_Rate ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@agreed_currency", invoice.Agreed_Currency ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@intermediary_entity", invoice.Intermediary_Entity ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@use_oss", invoice.Use_Oss ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@document_posted", invoice.Document_Posted ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@adjust_invoice_price", invoice.Adjust_Invoice_Price ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@check_fiscal_print", invoice.Check_Fiscal_Print ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@fiscal_print_error", invoice.Fiscal_Print_Error ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@seller_bdo_no", invoice.Seller_Bdo_No ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@seller_ksef_taxpayer_status", invoice.Seller_Ksef_Taxpayer_Status ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@procedure_vat_margin", invoice.Procedure_Vat_Margin ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@gov_link", invoice.Gov_Link ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@gov_verification_link", invoice.Gov_Verification_Link ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@payment_to_description", invoice.Payment_To_Description ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@buyer_jst", invoice.Buyer_Jst ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@buyer_gv", invoice.Buyer_Gv ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@bank_accounts", ToJsonColumn(invoice.Bank_Accounts));
+                command.Parameters.AddWithValue("@issuers", ToJsonColumn(invoice.Issuers));
+                command.Parameters.AddWithValue("@recipients", ToJsonColumn(invoice.Recipients));
+                command.Parameters.AddWithValue("@descriptions", ToJsonColumn(invoice.Descriptions));
+                command.Parameters.AddWithValue("@transaction_contracts", ToJsonColumn(invoice.Transaction_Contracts));
+                command.Parameters.AddWithValue("@transaction_orders", ToJsonColumn(invoice.Transaction_Orders));
+                command.Parameters.AddWithValue("@transaction_batches", ToJsonColumn(invoice.Transaction_Batches));
 
                 command.ExecuteNonQuery();
             }
@@ -591,12 +634,12 @@ namespace FakturowniaService
             id, invoice_id, name, description, price_net, quantity, total_price_gross, total_price_net, account_id, created_at, 
             updated_at, additional_info, quantity_unit, tax, price_gross, price_tax, total_price_tax, kind, invoice_position_id, 
             product_id, deleted, discount, discount_percent, tax2, exchange_rate, accounting_tax_kind, code, discount_net, 
-            lump_sum_tax, corrected_pos_kind, gtu_code
+            lump_sum_tax, corrected_pos_kind, gtu_code, technical_tax
         ) VALUES (
             @id, @invoice_id, @name, @description, @price_net, @quantity, @total_price_gross, @total_price_net, @account_id, @created_at, 
             @updated_at, @additional_info, @quantity_unit, @tax, @price_gross, @price_tax, @total_price_tax, @kind, @invoice_position_id, 
             @product_id, @deleted, @discount, @discount_percent, @tax2, @exchange_rate, @accounting_tax_kind, @code, @discount_net, 
-            @lump_sum_tax, @corrected_pos_kind, @gtu_code
+            @lump_sum_tax, @corrected_pos_kind, @gtu_code, @technical_tax
         )";
 
             using (var command = new SqlCommand(query, connection, transaction))
@@ -632,6 +675,7 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@lump_sum_tax", item.Lump_Sum_Tax ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@corrected_pos_kind", (object)DBNull.Value);
                 command.Parameters.AddWithValue("@gtu_code", (object)DBNull.Value);
+                command.Parameters.AddWithValue("@technical_tax", item.Technical_Tax ?? (object)DBNull.Value);
                 command.ExecuteNonQuery();
             }
         }
@@ -789,6 +833,22 @@ namespace FakturowniaService
 
                 cmd.ExecuteNonQuery();
             }
+        }
+
+        private static object ToJsonColumn(object value)
+        {
+            if (value == null)
+                return DBNull.Value;
+
+            if (value is JToken token)
+            {
+                if (token.Type == JTokenType.Null || token.Type == JTokenType.Undefined)
+                    return DBNull.Value;
+
+                return token.ToString(Formatting.None);
+            }
+
+            return JsonConvert.SerializeObject(value);
         }
     }
 }
