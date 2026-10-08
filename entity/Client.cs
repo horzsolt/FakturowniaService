@@ -63,7 +63,20 @@ namespace FakturowniaService
         public bool Disable_Auto_Reminders { get; set; }
         public long? Buyer_Id { get; set; }
         public long? Price_List_Id { get; set; }
+        public String Search_Data { get; set; }
+
+        [JsonConverter(typeof(DecimalStringConverter))]
+        public decimal? Balance { get; set; }
+
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
+        public string Tag_List { get; set; }
         public String Panel_Url { get; set; }
+
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
+        public string Tp_Client_Connection { get; set; }
+        public string Default_Tax { get; set; }
+        public bool? Use_Postal_Address { get; set; }
+        public string Recipient_Role { get; set; }
     }
 
 }

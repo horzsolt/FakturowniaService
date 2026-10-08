@@ -697,7 +697,8 @@ namespace FakturowniaService
             category_id, use_delivery_address, delivery_address, person, panel_user_id, use_mass_payment, 
             mass_payment_code, external_id, company, title, mobile_phone, register_number, tax_no_check, 
             attachments_count, default_payment_type, tax_no_kind, accounting_id, disable_auto_reminders, 
-            buyer_id, price_list_id, panel_url
+            buyer_id, price_list_id, search_data, balance, tag_list, panel_url, tp_client_connection,
+            default_tax, use_postal_address, recipient_role
         ) VALUES (
             @Id, @Name, @TaxNo, @PostCode, @City, @Street, @FirstName, @Country, @Email, @Phone, @Www, @Fax, 
             @CreatedAt, @UpdatedAt, @StreetNo, @Kind, @Bank, @BankAccount, @BankAccountId, @Shortcut, @Note, 
@@ -705,7 +706,8 @@ namespace FakturowniaService
             @CategoryId, @UseDeliveryAddress, @DeliveryAddress, @Person, @PanelUserId, @UseMassPayment, 
             @MassPaymentCode, @ExternalId, @Company, @Title, @MobilePhone, @RegisterNumber, @TaxNoCheck, 
             @AttachmentsCount, @DefaultPaymentType, @TaxNoKind, @AccountingId, @DisableAutoReminders, 
-            @BuyerId, @PriceListId, @PanelUrl
+            @BuyerId, @PriceListId, @SearchData, @Balance, @TagList, @PanelUrl, @TpClientConnection,
+            @DefaultTax, @UsePostalAddress, @RecipientRole
         )";
 
             using (var command = new SqlCommand(query, connection, transaction))
@@ -762,7 +764,14 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@DisableAutoReminders", client.Disable_Auto_Reminders);
                 command.Parameters.AddWithValue("@BuyerId", client.Buyer_Id ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@PriceListId", client.Price_List_Id ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@SearchData", client.Search_Data ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@Balance", client.Balance ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@TagList", client.Tag_List ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@PanelUrl", client.Panel_Url ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@TpClientConnection", client.Tp_Client_Connection ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@DefaultTax", client.Default_Tax ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@UsePostalAddress", client.Use_Postal_Address ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@RecipientRole", client.Recipient_Role ?? (object)DBNull.Value);
 
                 command.ExecuteNonQuery();
             }
