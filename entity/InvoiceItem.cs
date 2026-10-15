@@ -20,8 +20,8 @@ namespace FakturowniaService
         [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Total_Price_Net { get; set; }
         public long? Account_Id { get; set; }
-        public DateTime? Created_At { get; set; }
-        public DateTime? Updated_At { get; set; }
+        public DateTimeOffset? Created_At { get; set; }
+        public DateTimeOffset? Updated_At { get; set; }
         public string Additional_Info { get; set; }
         public string Quantity_Unit { get; set; }
         public string Tax { get; set; }
@@ -46,7 +46,10 @@ namespace FakturowniaService
         public decimal? Discount_Net { get; set; }
         [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Lump_Sum_Tax { get; set; }
+        [Newtonsoft.Json.JsonProperty("corrected_pos_kind")]
         public string CorrectedPosKind { get; set; }
+
+        [Newtonsoft.Json.JsonProperty("gtu_code")]
         public string GtuCode { get; set; }
         public string Technical_Tax { get; set; }
     }

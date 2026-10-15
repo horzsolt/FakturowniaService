@@ -13,6 +13,7 @@ namespace FakturowniaService
         {
             return Id ?? 0;
         }
+        [Newtonsoft.Json.JsonProperty("user_id")]
         public long? UserId { get; set; }
         public long GetUserId()
         {
@@ -160,6 +161,7 @@ namespace FakturowniaService
         public string Buyer_Mobile_Phone { get; set; }
         public string Kind_Text { get; set; }
         public long? Invoice_For_Receipt_Id { get; set; }
+        [Newtonsoft.Json.JsonProperty("receipt_for_invoice_id")]
         public long? Receipt_For_InvoiceId { get; set; }
         public bool? Recipient_Company { get; set; }
         public string Recipient_First_Name { get; set; }
@@ -172,13 +174,19 @@ namespace FakturowniaService
         public string Recipient_Email { get; set; }
         public string Recipient_Phone { get; set; }
         public string Recipient_Note { get; set; }
+        [Newtonsoft.Json.JsonProperty("overdue?")]
         public bool? Overdue { get; set; }
         public string Get_Tax_Name { get; set; }
+        [Newtonsoft.Json.JsonProperty("tax_visible?")]
         public bool? Tax_Visible { get; set; }
         public string Tax_Name_Type { get; set; }
         public int? Split_Payment { get; set; }
-        //public string Gtu_Codes { get; set; }
-        //public string Procedure_Designations { get; set; }
+
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
+        public string Gtu_Codes { get; set; }
+
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
+        public string Procedure_Designations { get; set; }
         public bool? Accounting_Doc { get; set; }
         public string Payment_Status { get; set; }
         public string Get_Tax2_Name { get; set; }
@@ -195,7 +203,7 @@ namespace FakturowniaService
         [JsonConverter(typeof(DecimalStringConverter))]
         public decimal? Adjust_Invoice_Price { get; set; }
         public bool? Check_Fiscal_Print { get; set; }
-        public string Fiscal_Print_Error { get; set; }
+        public bool? Fiscal_Print_Error { get; set; }
         public string Seller_Bdo_No { get; set; }
         public string Seller_Ksef_Taxpayer_Status { get; set; }
         public string Procedure_Vat_Margin { get; set; }

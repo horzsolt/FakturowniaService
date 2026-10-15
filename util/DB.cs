@@ -595,8 +595,8 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@tax_visible", invoice.Tax_Visible ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@tax_name_type", invoice.Tax_Name_Type ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@split_payment", invoice.Split_Payment ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@gtu_codes", (object)DBNull.Value);
-                command.Parameters.AddWithValue("@procedure_designations", (object)DBNull.Value);
+                command.Parameters.AddWithValue("@gtu_codes", invoice.Gtu_Codes ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@procedure_designations", invoice.Procedure_Designations ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@accounting_doc", invoice.Accounting_Doc ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@payment_status", invoice.Payment_Status ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@get_tax2_name", invoice.Get_Tax2_Name ?? (object)DBNull.Value);
@@ -678,8 +678,8 @@ namespace FakturowniaService
                 command.Parameters.AddWithValue("@code", item.Code ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@discount_net", item.Discount_Net ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@lump_sum_tax", item.Lump_Sum_Tax ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@corrected_pos_kind", (object)DBNull.Value);
-                command.Parameters.AddWithValue("@gtu_code", (object)DBNull.Value);
+                command.Parameters.AddWithValue("@corrected_pos_kind", item.CorrectedPosKind ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("@gtu_code", item.GtuCode ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("@technical_tax", item.Technical_Tax ?? (object)DBNull.Value);
                 command.ExecuteNonQuery();
             }
