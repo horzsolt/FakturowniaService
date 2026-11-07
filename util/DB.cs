@@ -788,7 +788,7 @@ namespace FakturowniaService
                 department_bank_account, department_bank, department_street, department_post_code, department_city, department_country, department_email, department_www, department_fax,
                 department_phone, client_company, client_title, client_first_name, client_last_name, client_name, client_tax_no_kind, client_tax_no, client_street, client_post_code,
                 client_city, client_bank_account, client_bank, client_country, client_note, client_email, client_phone, client_delivery_address, client_use_delivery_address, exchange_currency,
-                exchange_kind, exchange_currency_rate, exchange_date, exchange_note, price_net, price_gross, price_tax, calculating_strategy_position, calculating_strategy_sum,
+                exchange_kind, exchange_currency_rate, exchange_date, exchange_note, calculating_strategy_position, calculating_strategy_sum,
                 calculating_strategy_invoice_form_price_kind, transaction_date, template_id, purchase_price_net, purchase_price_gross, purchase_price_tax, from_form_with_actions,
                 from_api, origin, additional_info, additional_info_desc, status, quantity, calculate_sums_cache_updated_at, exchange_rate_den, exchange_currency_rate_den,
                 fiscal_currency, fiscal_exchange_rate, fiscal_exchange_rate_den, search_data, warehouse_actions)
@@ -798,7 +798,7 @@ namespace FakturowniaService
                 @department_bank_account, @department_bank, @department_street, @department_post_code, @department_city, @department_country, @department_email, @department_www, @department_fax,
                 @department_phone, @client_company, @client_title, @client_first_name, @client_last_name, @client_name, @client_tax_no_kind, @client_tax_no, @client_street, @client_post_code,
                 @client_city, @client_bank_account, @client_bank, @client_country, @client_note, @client_email, @client_phone, @client_delivery_address, @client_use_delivery_address, @exchange_currency,
-                @exchange_kind, @exchange_currency_rate, @exchange_date, @exchange_note, @price_net, @price_gross, @price_tax, @calculating_strategy_position, @calculating_strategy_sum,
+                @exchange_kind, @exchange_currency_rate, @exchange_date, @exchange_note, @calculating_strategy_position, @calculating_strategy_sum,
                 @calculating_strategy_invoice_form_price_kind, @transaction_date, @template_id, @purchase_price_net, @purchase_price_gross, @purchase_price_tax, @from_form_with_actions,
                 @from_api, @origin, @additional_info, @additional_info_desc, @status, @quantity, @calculate_sums_cache_updated_at, @exchange_rate_den, @exchange_currency_rate_den,
                 @fiscal_currency, @fiscal_exchange_rate, @fiscal_exchange_rate_den, @search_data, @warehouse_actions);

@@ -13,7 +13,11 @@ namespace FakturowniaService
             if (reader.TokenType == JsonToken.Null)
                 return null;
 
-            return JToken.Load(reader).ToString(Formatting.None);
+            JToken token = JToken.Load(reader);
+            if (token.Type == JTokenType.String)
+                return token.Value<string>();
+
+            return token.ToString(Formatting.None);
         }
 
         public override void WriteJson(JsonWriter writer, string? value, JsonSerializer serializer)

@@ -209,6 +209,7 @@ namespace FakturowniaService
         public string Procedure_Vat_Margin { get; set; }
         public string Gov_Link { get; set; }
         public string Gov_Verification_Link { get; set; }
+        [Newtonsoft.Json.JsonConverter(typeof(RawJsonStringConverter))]
         public string Payment_To_Description { get; set; }
         public string Buyer_Jst { get; set; }
         public string Buyer_Gv { get; set; }

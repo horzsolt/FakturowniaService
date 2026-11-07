@@ -88,17 +88,14 @@ namespace FakturowniaService
         public decimal? exchange_currency_rate { get; set; }
         public DateTime? exchange_date { get; set; }
         public string? exchange_note { get; set; }
-        public decimal price_net { get; set; }
-        public decimal price_gross { get; set; }
-        public decimal price_tax { get; set; }
         public string? calculating_strategy_position { get; set; }
         public string? calculating_strategy_sum { get; set; }
         public string? calculating_strategy_invoice_form_price_kind { get; set; }
         public DateTime transaction_date { get; set; }
         public int? template_id { get; set; }
-        public decimal purchase_price_net { get; set; }
-        public decimal purchase_price_gross { get; set; }
-        public decimal purchase_price_tax { get; set; }
+        public decimal? purchase_price_net { get; set; }
+        public decimal? purchase_price_gross { get; set; }
+        public decimal? purchase_price_tax { get; set; }
         public bool from_form_with_actions { get; set; }
         public bool from_api { get; set; }
         public string? origin { get; set; }
